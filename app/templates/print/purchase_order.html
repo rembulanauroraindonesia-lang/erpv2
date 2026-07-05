@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PURCHASE ORDER - {{ doc.nomor }}</title>
+    <style>
+        @page { size: A4; margin: 2cm; }
+        body { font-family: 'Inter', sans-serif; font-size: 11px; color: #333; margin: 0; padding: 0; }
+        .header { display: flex; align-items: center; gap: 1rem; border-bottom: 2px solid #1e40af; padding-bottom: 12px; margin-bottom: 20px; }
+        .header img { height: 4rem; }
+        .header .company-info h1 { font-size: 18px; margin: 0 0 4px 0; color: #1e40af; }
+        .header .company-info p { margin: 0; font-size: 10px; color: #666; }
+        .doc-title { text-align: center; font-size: 16px; font-weight: bold; margin: 24px 0 8px 0; color: #1e40af; }
+        .doc-subtitle { text-align: center; font-size: 12px; color: #666; margin-bottom: 24px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .info-box { border: 1px solid #e5e7eb; padding: 10px; border-radius: 4px; }
+        .info-box .label { font-size: 9px; text-transform: uppercase; color: #999; margin-bottom: 4px; }
+        .info-box .value { font-size: 11px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        th { background: #f9fafb; font-size: 9px; text-transform: uppercase; color: #666; padding: 8px 6px; border: 1px solid #e5e7eb; }
+        td { padding: 8px 6px; border: 1px solid #e5e7eb; font-size: 10px; }
+        .totals { float: right; width: 280px; }
+        .totals table { margin-bottom: 8px; }
+        .totals td { border: none; padding: 4px 8px; }
+        .totals .grand { font-weight: bold; font-size: 12px; border-top: 2px solid #333; }
+        .footer { margin-top: 40px; }
+        .signature { display: flex; justify-content: space-between; margin-top: 60px; }
+        .signature .box { width: 180px; text-align: center; }
+        .signature .box .line { border-bottom: 1px solid #333; margin: 50px 0 8px 0; }
+    </style>
+</head>
+<body>
+    <!-- Company Header -->
+    <div class="header">
+        {% if company.get('logo_url') %}
+        <img src="{{ company.logo_url }}" alt="Logo">
+        {% endif %}
+        <div class="company-info">
+            <h1>{{ company.get('company_name', '-') }}</h1>
+            <p>{{ company.get('company_address', '-') }}</p>
+            <p>NPWP: {{ company.get('company_npwp', '-') }} | {{ company.get('company_phone', '-') }}</p>
+        </div>
+    </div>
+
+    <div class="doc-title">PURCHASE ORDER</div>
+    <div class="doc-subtitle">{{ doc.nomor }}</div>
+
+    <!-- Document Info Grid -->
+    <div class="grid">
+        <div class="info-box">
+            <div class="label">Supplier</div>
+            <div class="value">{{ supplier_name }}</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Tanggal Order</div>
+            <div class="value">{{ doc.order_date.strftime('%d %B %Y') if doc.order_date else '-' }}</div>
+        </div>
+        <div class="info-box">
+            <div class="label">NPWP Supplier</div>
+            <div class="value">{{ supplier_npwp or '-' }}</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Estimasi Tiba</div>
+            <div class="value">{{ doc.expected_date.strftime('%d/%m/%Y') if doc.expected_date else '-' }}</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Alamat Supplier</div>
+            <div class="value">{{ supplier_address or '-' }}</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Ket. Pembayaran</div>
+            <div class="value">{{ doc.terms_of_payment or '-' }}</div>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <table>
+        <thead>
+            <tr>
+                <th style="width:30px">No</th>
+                <th>Item</th>
+                <th style="width:60px;text-align:right">Qty</th>
+                <th style="width:100px;text-align:right">Harga/Unit</th>
+                <th style="width:100px;text-align:right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pi in items %}
+            <tr>
+                <td style="text-align:center">{{ loop.index }}</td>
+                <td>{{ item_names.get(pi.item_id, '-') }}</td>
+                <td style="text-align:right">{{ "{:,.4f}".format(pi.quantity) }}</td>
+                <td style="text-align:right">Rp {{ "{:,.0f}".format(pi.unit_price) }}</td>
+                <td style="text-align:right">Rp {{ "{:,.0f}".format(pi.total) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Totals (total only, no PPN for purchase) -->
+    <div class="totals">
+        <table>
+            <tr class="grand"><td style="text-align:right">Total</td><td style="text-align:right">Rp {{ "{:,.0f}".format(doc.total) }}</td></tr>
+        </table>
+    </div>
+
+    <div style="clear:both; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+        <div style="font-weight:bold; margin-bottom: 4px;">Ketentuan:</div>
+        <div>Pembayaran: {{ doc.terms_of_payment or '-' }}</div>
+        <div>Pengiriman: {{ doc.terms_of_delivery or '-' }}</div>
+        {% if doc.notes %}<div>Catatan: {{ doc.notes }}</div>{% endif %}
+    </div>
+
+    <!-- Signatures -->
+    <div class="footer">
+        <div class="signature">
+            <div class="box">
+                <div class="line"></div>
+                <div>Hormat Kami,<br>{{ company.get('company_name', '-') }}</div>
+            </div>
+            <div class="box">
+                <div class="line"></div>
+                <div>Menyetujui,<br>{{ supplier_name }}</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,168 @@
+{% extends "shared/_base.html" %}
+
+{% block title %}Buat Invoice — RAI ERP{% endblock %}
+{% block page_title %}
+<div class="flex items-center gap-3">
+    <a href="/app/invoice" class="text-gray-400 hover:text-gray-600">&larr;</a>
+    Buat Invoice
+</div>
+{% endblock %}
+
+{% block content %}
+<div x-data="invoiceBuilder()" class="space-y-6">
+    <div class="bg-white rounded-lg border p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                <select x-model="customer_id" @change="onCustomerChange()" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                    <option value="">-- Pilih Customer --</option>
+                    {% for c in customers %}
+                    <option value="{{ c.id }}" data-name="{{ c.name }}" data-npwp="{{ c.npwp or '' }}" data-address="{{ c.address or '' }}" data-phone="{{ c.phone or '' }}">
+                        {{ c.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div x-show="selectedCustomer.name" class="mt-2 p-3 bg-blue-50 rounded text-xs space-y-1">
+                    <div><strong x-text="selectedCustomer.name"></strong></div>
+                    <div class="text-gray-600" x-show="selectedCustomer.npwp">NPWP: <span x-text="selectedCustomer.npwp"></span></div>
+                    <div class="text-gray-600" x-show="selectedCustomer.address" x-text="selectedCustomer.address"></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Invoice</label>
+                    <input type="date" x-model="invoice_date" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jatuh Tempo</label>
+                    <input type="date" x-model="due_date" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                </div>
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ket. Pembayaran</label>
+            <input type="text" x-model="terms_of_payment" placeholder="e.g. COD / Tempo 14 Hari / Transfer" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+            <textarea x-model="notes" rows="2" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"></textarea>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="bg-white rounded-lg border p-6">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-700">Items</h3>
+            <button @click="addItem()" class="text-sm text-blue-600 hover:text-blue-800">+ Tambah</button>
+        </div>
+        <table class="w-full table-fixed">
+            <thead class="bg-gray-50 border-b">
+                <tr>
+                    <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 w-[30px]">#</th>
+                    <th class="px-2 py-2 text-left text-xs font-medium text-gray-500">Item</th>
+                    <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 w-[80px]">Qty</th>
+                    <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 w-[120px]">Harga/Unit</th>
+                    <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 w-[120px]">Total</th>
+                    <th class="px-2 py-2 w-[30px]"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="(item, idx) in items" :key="idx">
+                    <tr class="border-b">
+                        <td class="px-2 py-2 text-sm text-center" x-text="idx + 1"></td>
+                        <td class="px-2 py-2">
+                            <select x-model="item.item_id" class="w-full rounded border border-gray-200 px-2 py-1 text-xs">
+                                <option value="">-- Pilih --</option>
+                                {% for i in items %}
+                                <option value="{{ i.id }}">{{ i.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="px-2 py-2">
+                            <input type="number" x-model="item.quantity" step="any" min="0" class="w-full rounded border border-gray-200 px-2 py-1 text-xs text-right">
+                        </td>
+                        <td class="px-2 py-2">
+                            <input type="number" x-model="item.unit_price" step="any" min="0" class="w-full rounded border border-gray-200 px-2 py-1 text-xs text-right">
+                        </td>
+                        <td class="px-2 py-2 text-sm text-right" x-text="formatRupiah(item.quantity * item.unit_price)"></td>
+                        <td class="px-2 py-2 text-center">
+                            <button @click="removeItem(idx)" class="text-red-400 hover:text-red-600 text-xs">&times;</button>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+
+        <!-- Summary -->
+        <div class="mt-4 border-t pt-3">
+            <div class="flex justify-end">
+                <div class="w-64 space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Subtotal</span>
+                        <span class="font-medium" x-text="formatRupiah(subtotal)"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">PPN (11%)</span>
+                        <span x-text="formatRupiah(ppnAmount)"></span>
+                    </div>
+                    <div class="flex justify-between border-t pt-2 text-base font-bold">
+                        <span>Grand Total</span>
+                        <span x-text="formatRupiah(grandTotal)"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-end gap-3">
+        <a href="/app/invoice" class="px-4 py-2 text-sm border rounded-md hover:bg-gray-50">Batal</a>
+        <button @click="save()" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">Simpan</button>
+    </div>
+</div>
+
+<script>
+function invoiceBuilder() {
+    return {
+        customer_id: '', selectedCustomer: {name:'',npwp:'',address:'',phone:''},
+        invoice_date: '{{ today }}', due_date: '',
+        terms_of_payment: '', notes: '',
+        items: [{item_id:'',quantity:1,unit_price:0}],
+
+        get subtotal() { return this.items.reduce((s,i)=>s+(parseFloat(i.quantity)||0)*(parseFloat(i.unit_price)||0),0) },
+        get ppnAmount() { return this.subtotal * 0.11 },
+        get grandTotal() { return this.subtotal + this.ppnAmount },
+
+        onCustomerChange() {
+            const sel = document.querySelector('select[x-model="customer_id"]');
+            if (!sel || !sel.selectedOptions[0]) return;
+            const opt = sel.selectedOptions[0];
+            this.selectedCustomer = {
+                name: opt.dataset.name || '', npwp: opt.dataset.npwp || '',
+                address: opt.dataset.address || '', phone: opt.dataset.phone || '',
+            };
+        },
+        addItem() { this.items.push({item_id:'',quantity:1,unit_price:0}) },
+        removeItem(i) { if (this.items.length > 1) this.items.splice(i,1) },
+        formatRupiah(v) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(v||0) },
+        async save() {
+            const body = {
+                customer_id: this.customer_id || null,
+                invoice_date: this.invoice_date || null,
+                due_date: this.due_date || null,
+                terms_of_payment: this.terms_of_payment || null,
+                notes: this.notes || null,
+                include_ppn: true,
+                items: this.items.filter(i=>i.item_id).map((i,idx)=>({
+                    item_id: i.item_id, quantity: parseFloat(i.quantity)||0,
+                    unit_price: parseFloat(i.unit_price)||0, urutan: idx,
+                })),
+            };
+            const r = await fetch('/api/invoice', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            if (!r.ok) { const e=await r.json(); alert(e.detail||'Error'); return }
+            const data = await r.json();
+            window.location.href = '/app/invoice/'+data.id;
+        },
+    }
+}
+</script>
+{% endblock %}

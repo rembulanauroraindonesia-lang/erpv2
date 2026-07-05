@@ -45,3 +45,111 @@ async def generate_pdf(doc_type: str, doc, items, db: AsyncSession) -> bytes:
         format_date=format_date_wib,
     )
     return HTML(string=html_content).write_pdf()
+
+
+async def generate_so_pdf(doc, items, db: AsyncSession) -> bytes:
+    company = await get_all_settings(db)
+    template = jinja_env.get_template("print/sales_order.html")
+
+    customer = None
+    if doc.customer_id:
+        customer = await db.get(Contact, doc.customer_id)
+
+    item_ids = [pi.item_id for pi in items]
+    item_names = {}
+    if item_ids:
+        result = await db.execute(select(Item).where(Item.id.in_(item_ids)))
+        item_names = {i.id: i.name for i in result.scalars().all()}
+
+    html_content = template.render(
+        doc=doc,
+        items=items,
+        company=company,
+        customer_name=customer.name if customer else '-',
+        customer_npwp=getattr(customer, 'npwp', None),
+        customer_address=getattr(customer, 'address', None),
+        item_names=item_names,
+    )
+    return HTML(string=html_content).write_pdf()
+
+
+async def generate_pu_pdf(doc, items, db: AsyncSession) -> bytes:
+    company = await get_all_settings(db)
+    template = jinja_env.get_template("print/pickup_order.html")
+
+    supplier = None
+    if doc.supplier_id:
+        supplier = await db.get(Contact, doc.supplier_id)
+
+    item_ids = [pi.item_id for pi in items]
+    item_names = {}
+    if item_ids:
+        result = await db.execute(select(Item).where(Item.id.in_(item_ids)))
+        item_names = {i.id: i.name for i in result.scalars().all()}
+
+    html_content = template.render(
+        doc=doc,
+        items=items,
+        company=company,
+        supplier_name=supplier.name if supplier else '-',
+        supplier_npwp=getattr(supplier, 'npwp', None),
+        supplier_address=getattr(supplier, 'address', None),
+        item_names=item_names,
+    )
+    return HTML(string=html_content).write_pdf()
+
+
+async def generate_dn_pdf(doc, items, db: AsyncSession) -> bytes:
+    company = await get_all_settings(db)
+    template = jinja_env.get_template("print/delivery_note.html")
+
+    customer = None
+    if doc.customer_id:
+        customer = await db.get(Contact, doc.customer_id)
+
+    item_ids = [pi.item_id for pi in items]
+    item_names = {}
+    item_units = {}
+    if item_ids:
+        result = await db.execute(select(Item).where(Item.id.in_(item_ids)))
+        for i in result.scalars().all():
+            item_names[i.id] = i.name
+            item_units[i.id] = getattr(i, 'unit', '-')
+
+    html_content = template.render(
+        doc=doc,
+        items=items,
+        company=company,
+        customer_name=customer.name if customer else '-',
+        customer_npwp=getattr(customer, 'npwp', None),
+        customer_address=getattr(customer, 'address', None),
+        item_names=item_names,
+        item_units=item_units,
+    )
+    return HTML(string=html_content).write_pdf()
+
+
+async def generate_inv_pdf(doc, items, db: AsyncSession) -> bytes:
+    company = await get_all_settings(db)
+    template = jinja_env.get_template("print/invoice.html")
+
+    customer = None
+    if doc.customer_id:
+        customer = await db.get(Contact, doc.customer_id)
+
+    item_ids = [pi.item_id for pi in items if pi.item_id]
+    item_names = {}
+    if item_ids:
+        result = await db.execute(select(Item).where(Item.id.in_(item_ids)))
+        item_names = {i.id: i.name for i in result.scalars().all()}
+
+    html_content = template.render(
+        doc=doc,
+        items=items,
+        company=company,
+        customer_name=customer.name if customer else '-',
+        customer_npwp=getattr(customer, 'npwp', None),
+        customer_address=getattr(customer, 'address', None),
+        item_names=item_names,
+    )
+    return HTML(string=html_content).write_pdf()

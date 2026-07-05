@@ -1,0 +1,208 @@
+{% extends "shared/_base.html" %}
+
+{% block title %}Buat Sales Order — RAI ERP{% endblock %}
+{% block page_title %}
+<div class="flex items-center gap-3">
+    <a href="/app/sales-order" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+    </a>
+    Buat Sales Order{% if penawaran %} dari {{ penawaran.nomor }}{% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div x-data="soBuilder()" x-init="init()">
+    <!-- Header -->
+    <div class="bg-white rounded-lg border p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                <select x-model="selectedCustomer" class="w-full px-3 py-2 border rounded-lg text-sm"
+                        @change="onCustomerChange()">
+                    <option value="">-- Pilih Customer --</option>
+                    {% for c in customers %}
+                    <option value="{{ c.id }}" {% if penawaran and penawaran.customer_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Order</label>
+                <input type="date" x-model="orderDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Target Kirim</label>
+                <input type="date" x-model="deliveryDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ket. Pembayaran</label>
+                <input type="text" x-model="termsOfPayment" placeholder="Mis: 30 hari setelah invoice"
+                       class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ket. Pengiriman</label>
+                <input type="text" x-model="termsOfDelivery" placeholder="Mis: Franco Jakarta"
+                       class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                <textarea x-model="notes" rows="2" class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="bg-white rounded-lg border mb-6 overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b">
+                <tr>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-10">#</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 min-w-[200px]">Item</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-24">Qty</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-32">Harga/Unit</th>
+                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 w-32">Total</th>
+                    <th class="px-3 py-2 w-10"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="(item, index) in items" :key="index">
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-3 py-2 text-gray-500" x-text="index + 1"></td>
+                        <td class="px-3 py-2">
+                            <select x-model="item.item_id" class="w-full px-2 py-1 border rounded text-sm">
+                                <option value="">-- Pilih --</option>
+                                {% for i in items %}
+                                <option value="{{ i.id }}">{{ i.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="px-3 py-2">
+                            <input type="number" x-model.number="item.quantity" min="0" step="0.01"
+                                   class="w-full px-2 py-1 border rounded text-sm text-right">
+                        </td>
+                        <td class="px-3 py-2">
+                            <input type="number" x-model.number="item.unit_price" min="0"
+                                   class="w-full px-2 py-1 border rounded text-sm text-right">
+                        </td>
+                        <td class="px-3 py-2 text-right font-mono text-gray-700"
+                            x-text="formatRp((item.quantity || 0) * (item.unit_price || 0))"></td>
+                        <td class="px-3 py-2">
+                            <button @click="removeItem(index)" class="text-red-500 hover:text-red-700">✕</button>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+
+    <button @click="addItem()" class="px-4 py-2 border border-dashed border-gray-400 text-gray-600 rounded-lg hover:bg-gray-50 text-sm mb-6">
+        + Tambah Item
+    </button>
+
+    <!-- Summary -->
+    <div class="bg-white rounded-lg border p-6 mb-6">
+        <div class="flex justify-end">
+            <div class="w-full md:w-80 space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Subtotal</span>
+                    <span class="font-mono" x-text="formatRp(total)"></span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">PPN (11%)</span>
+                    <span class="font-mono" x-text="formatRp(ppnAmount)"></span>
+                </div>
+                <div class="border-t pt-3 flex justify-between font-semibold">
+                    <span>Grand Total</span>
+                    <span class="font-mono text-blue-600" x-text="formatRp(grandTotal)"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-3">
+        <button @click="save()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">Simpan</button>
+        <a href="/app/sales-order" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium">Batal</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function soBuilder() {
+    return {
+        items: [],
+        selectedCustomer: '{{ penawaran.customer_id if penawaran else "" }}',
+        orderDate: new Date().toISOString().split('T')[0],
+        deliveryDate: '',
+        termsOfPayment: '{{ penawaran.terms_of_payment if penawaran else "" }}',
+        termsOfDelivery: '{{ penawaran.terms_of_delivery if penawaran else "" }}',
+        notes: '',
+        penawaranId: '{{ penawaran.id if penawaran else "" }}',
+
+        init() {
+            {% if penawaran %}
+            // Pre-fill items from penawaran
+            fetch('/api/penawaran/{{ penawaran.id }}')
+                .then(r => r.json())
+                .then(data => {
+                    this.items = (data.items || []).map(i => ({
+                        item_id: i.item_id,
+                        quantity: parseFloat(i.quantity),
+                        unit_price: parseFloat(i.harga_jual_per_unit),
+                        urutan: i.urutan,
+                        notes: i.notes || '',
+                    }));
+                });
+            {% endif %}
+        },
+
+        addItem() {
+            this.items.push({ item_id: '', quantity: 1, unit_price: 0, urutan: this.items.length, notes: '' });
+        },
+
+        removeItem(index) { this.items.splice(index, 1); },
+
+        get total() {
+            return this.items.reduce((s, i) => s + (i.quantity || 0) * (i.unit_price || 0), 0);
+        },
+
+        get ppnAmount() { return this.total * 0.11; },
+
+        get grandTotal() { return this.total + this.ppnAmount; },
+
+        onCustomerChange() {},
+
+        async save() {
+            const body = {
+                customer_id: this.selectedCustomer || null,
+                penawaran_id: this.penawaranId || null,
+                order_date: this.orderDate || null,
+                delivery_date: this.deliveryDate || null,
+                terms_of_payment: this.termsOfPayment || null,
+                terms_of_delivery: this.termsOfDelivery || null,
+                notes: this.notes || null,
+                items: this.items.filter(i => i.item_id),
+            };
+
+            const res = await fetch('/api/sales-order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                window.location.href = '/app/sales-order/' + data.id;
+            } else {
+                const err = await res.json();
+                alert('Gagal: ' + (err.detail || 'Error'));
+            }
+        },
+
+        formatRp(val) { return 'Rp ' + Math.round(val).toLocaleString('id-ID'); },
+    };
+}
+</script>
+{% endblock %}
