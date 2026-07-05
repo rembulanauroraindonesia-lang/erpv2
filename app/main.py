@@ -23,6 +23,7 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/data", StaticFiles(directory=settings.data_dir), name="data")
 
 from app.routers import contacts as contacts_api
 from app.routers import items as items_api

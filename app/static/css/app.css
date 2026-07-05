@@ -1,6 +1,24 @@
+/* RAI ERP — custom styles (no @apply — CDN Tailwind doesn't process it) */
+
 .nav-link {
-    @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-colors;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+    transition: background-color 150ms, color 150ms;
+}
+.nav-link:hover {
+    background-color: #f3f4f6;
 }
 .nav-link.active {
-    @apply bg-blue-50 text-blue-700 font-medium;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 500;
+}
+
+.font-display {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
