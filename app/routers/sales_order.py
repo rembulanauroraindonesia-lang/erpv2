@@ -97,6 +97,7 @@ async def create_so(body: SalesOrderCreate, db: AsyncSession = Depends(get_db)):
         pic_name=body.pic_name,
         pic_phone=body.pic_phone,
         delivery_address=body.delivery_address,
+        customer_po_number=body.customer_po_number,
         terms_of_payment=body.terms_of_payment,
         terms_of_delivery=body.terms_of_delivery,
         order_date=body.order_date or date.today(),

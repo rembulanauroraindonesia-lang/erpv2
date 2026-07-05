@@ -184,6 +184,7 @@ async def penawaran_edit(
         "price_mode": doc.price_mode,
         "terms_of_payment": doc.terms_of_payment or "",
         "terms_of_delivery": doc.terms_of_delivery or "",
+        "customer_po_number": doc.customer_po_number or "",
         "validity_days": doc.validity_days or 30,
         "notes": doc.notes or "",
         "items": [

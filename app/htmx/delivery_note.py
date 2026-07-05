@@ -67,10 +67,16 @@ async def dn_new(request: Request, db: AsyncSession = Depends(get_db)):
     items_result = await db.execute(select(Item).where(Item.is_deleted == False))
     items = [{"id": i.id, "name": i.name, "unit": i.unit, "default_hpp": float(i.default_hpp or 0)} for i in items_result.scalars().all()]
 
+    expeditions_result = await db.execute(
+        select(Contact).where(Contact.type == "expedition", Contact.is_deleted == False)
+    )
+    expeditions = expeditions_result.scalars().all()
+
     return templates.TemplateResponse("delivery_note/new.html", {
         "request": request,
         "customers": customers,
         "items": items,
+        "expeditions": expeditions,
         "active": "delivery_note",
     })
 
@@ -101,11 +107,16 @@ async def dn_detail(request: Request, doc_id: str, db: AsyncSession = Depends(ge
     from app.services.settings import get_all_settings
     company = await get_all_settings(db)
 
+    expedition = None
+    if doc.expedition_id:
+        expedition = await db.get(Contact, doc.expedition_id)
+
     return templates.TemplateResponse("delivery_note/detail.html", {
         "request": request,
         "doc": doc,
         "items": items,
         "customer": customer,
+        "expedition": expedition,
         "item_names": item_names,
         "company": company,
         "active": "delivery_note",

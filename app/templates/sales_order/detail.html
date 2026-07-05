@@ -66,6 +66,9 @@
             <div><span class="text-gray-500">Ket. Pembayaran:</span> {{ doc.terms_of_payment or '-' }}</div>
             <div><span class="text-gray-500">Ket. Pengiriman:</span> {{ doc.terms_of_delivery or '-' }}</div>
         </div>
+        {% if doc.customer_po_number %}
+        <div class="mt-1 text-sm"><span class="text-gray-500">No. PO Customer:</span> {{ doc.customer_po_number }}</div>
+        {% endif %}
         {% if doc.notes %}
         <div class="mt-4 text-sm text-gray-600">
             <span class="text-gray-500">Catatan:</span> {{ doc.notes }}

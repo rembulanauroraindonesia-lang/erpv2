@@ -28,6 +28,9 @@ class DeliveryNoteCreate(BaseModel):
     vehicle_plate: Optional[str] = None
     driver_name: Optional[str] = None
     driver_phone: Optional[str] = None
+    expedition_id: Optional[str] = None
+    delivered_date: Optional[date] = None
+    receiver_name: Optional[str] = None
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     delivery_address: Optional[str] = None
@@ -44,6 +47,9 @@ class DeliveryNoteUpdate(BaseModel):
     vehicle_plate: Optional[str] = None
     driver_name: Optional[str] = None
     driver_phone: Optional[str] = None
+    expedition_id: Optional[str] = None
+    delivered_date: Optional[date] = None
+    receiver_name: Optional[str] = None
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     delivery_address: Optional[str] = None
@@ -62,6 +68,9 @@ class DeliveryNoteResponse(BaseModel):
     vehicle_plate: Optional[str] = None
     driver_name: Optional[str] = None
     driver_phone: Optional[str] = None
+    expedition_id: Optional[str] = None
+    delivered_date: Optional[date] = None
+    receiver_name: Optional[str] = None
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     delivery_address: Optional[str] = None

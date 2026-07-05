@@ -47,6 +47,7 @@ class PenawaranCreate(BaseModel):
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     delivery_address: Optional[str] = None
+    customer_po_number: Optional[str] = None
     notes: Optional[str] = None
     items: list[PenawaranItemData] = []
 
@@ -61,6 +62,7 @@ class PenawaranUpdate(BaseModel):
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     delivery_address: Optional[str] = None
+    customer_po_number: Optional[str] = None
     notes: Optional[str] = None
     items: Optional[list[PenawaranItemData]] = None
 
@@ -77,6 +79,7 @@ class PenawaranResponse(BaseModel):
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     delivery_address: Optional[str] = None
+    customer_po_number: Optional[str] = None
     notes: Optional[str] = None
     status: str
     total_beli: Decimal

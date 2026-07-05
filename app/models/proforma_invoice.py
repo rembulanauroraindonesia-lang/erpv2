@@ -13,6 +13,7 @@ class ProformaInvoice(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
     subtotal = Column(Numeric(15, 2), default=0, nullable=False)
     ppn_amount = Column(Numeric(15, 2), default=0, nullable=False)
     total = Column(Numeric(15, 2), default=0, nullable=False)
+    paid_amount = Column(Numeric(15, 2), default=0, nullable=False)
     due_date = Column(Date, nullable=True)
     payment_method = Column(String(20), nullable=True)  # transfer, giro, cek
     bukti_bayar_file = Column(String(500), nullable=True)

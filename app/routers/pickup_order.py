@@ -66,6 +66,8 @@ async def create_pu(body: PickupOrderCreate, db: AsyncSession = Depends(get_db))
         vehicle_plate=body.vehicle_plate,
         driver_name=body.driver_name,
         driver_phone=body.driver_phone,
+        expedition_id=body.expedition_id,
+        received_date=body.received_date,
         notes=body.notes,
     )
     db.add(doc); await db.flush()

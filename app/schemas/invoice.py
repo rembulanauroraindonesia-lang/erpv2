@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 
 
 class InvItemData(BaseModel):
@@ -67,6 +67,7 @@ class InvoiceResponse(BaseModel):
     total: Decimal
     ppn_amount: Decimal
     grand_total: Decimal
+    paid_amount: Decimal
     invoice_date: Optional[date] = None
     due_date: Optional[date] = None
     terms_of_payment: Optional[str] = None
@@ -81,6 +82,11 @@ class InvoiceResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     class Config: from_attributes = True
+
+    @computed_field
+    @property
+    def remaining(self) -> Decimal:
+        return self.grand_total - self.paid_amount
 
 
 class InvoiceDetailResponse(InvoiceResponse):

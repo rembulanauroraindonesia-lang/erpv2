@@ -46,6 +46,19 @@
                        class="w-full px-3 py-2 border rounded-lg text-sm">
             </div>
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ekspedisi</label>
+                <select x-model="expeditionId" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option value="">-- Pilih Ekspedisi --</option>
+                    {% for e in expeditions %}
+                    <option value="{{ e.id }}">{{ e.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tgl Diterima</label>
+                <input type="date" x-model="receivedDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">PIC Name</label>
                 <input type="text" x-model="picName" placeholder="Nama PIC"
                        class="w-full px-3 py-2 border rounded-lg text-sm">
@@ -135,6 +148,8 @@ function puBuilder() {
         vehiclePlate: '',
         driverName: '',
         driverPhone: '',
+        expeditionId: '',
+        receivedDate: '',
         picName: '',
         picPhone: '',
         pickupAddress: '',
@@ -157,6 +172,8 @@ function puBuilder() {
                 vehicle_plate: this.vehiclePlate || null,
                 driver_name: this.driverName || null,
                 driver_phone: this.driverPhone || null,
+                expedition_id: this.expeditionId || null,
+                received_date: this.receivedDate || null,
                 pic_name: this.picName || null,
                 pic_phone: this.picPhone || null,
                 pickup_address: this.pickupAddress || null,

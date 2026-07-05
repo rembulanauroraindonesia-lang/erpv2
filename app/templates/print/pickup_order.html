@@ -83,6 +83,14 @@
             <div class="label">Alamat Pickup</div>
             <div class="value">{{ doc.pickup_address or '-' }}</div>
         </div>
+        <div class="info-box">
+            <div class="label">Ekspedisi</div>
+            <div class="value">{{ expedition_name or '-' }}</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Tgl Diterima</div>
+            <div class="value">{{ doc.received_date or '-' }}</div>
+        </div>
     </div>
 
     <!-- Items Table -->

@@ -131,6 +131,12 @@
                 <div class="text-sm">{{ doc.terms_of_delivery }}</div>
             </div>
             {% endif %}
+            {% if doc.customer_po_number %}
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">No. PO Customer</div>
+                <div class="text-sm">{{ doc.customer_po_number }}</div>
+            </div>
+            {% endif %}
             {% if doc.notes %}
             <div class="col-span-2">
                 <div class="text-xs text-gray-500 uppercase mb-1">Catatan</div>

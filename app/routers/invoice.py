@@ -172,7 +172,8 @@ async def status_invoice(doc_id: str, body: dict, db: AsyncSession = Depends(get
     new_status = body.get("status")
     allowed = {
         "draft": ["locked"],
-        "locked": ["paid", "bad_debt", "cancelled", "revised", "obsolete"],
+        "locked": ["paid", "partially_paid", "bad_debt", "cancelled", "revised", "obsolete"],
+        "partially_paid": ["paid", "bad_debt"],
     }
     if new_status not in allowed.get(doc.status, []):
         raise HTTPException(400, f"Invalid transition from {doc.status} to {new_status}")

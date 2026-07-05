@@ -7,6 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.payment import Payment, PaymentHistory
+from app.models.invoice import Invoice
+from app.models.proforma_invoice import ProformaInvoice
+from app.models.system import ActivityLog
 from app.schemas.payment import (
     PaymentCreate, PaymentUpdate, PaymentStatusUpdate,
     PaymentResponse, PaymentHistoryResponse,
@@ -161,6 +164,94 @@ async def update_payment_status(payment_id: str, body: PaymentStatusUpdate, db: 
         due_date_before=old_due, due_date_after=doc.due_date,
         notes=body.notes, user_info=body.user_info,
     ))
+    await db.flush()
+
+    # --- Payment tracking: auto-update linked invoice / proforma invoice ---
+    inv = None
+    pi = None
+    if doc.invoice_id:
+        inv = await db.get(Invoice, doc.invoice_id)
+    if doc.proforma_invoice_id:
+        pi = await db.get(ProformaInvoice, doc.proforma_invoice_id)
+
+    if body.action == "cleared":
+        # Transition to cleared: add payment amount to invoice paid_amount
+        if inv and not inv.is_deleted:
+            old_inv_status = inv.status
+            inv.paid_amount = (inv.paid_amount or Decimal(0)) + doc.amount
+            if inv.paid_amount >= inv.grand_total:
+                inv.status = "paid"
+            elif inv.paid_amount > 0:
+                inv.status = "partially_paid"
+            await db.flush()
+            db.add(ActivityLog(entity_type="invoice", entity_id=inv.id,
+                               action="payment_cleared",
+                               description=f"Payment {doc.payment_number} cleared → invoice {inv.nomor}: "
+                                           f"paid {inv.paid_amount}/{inv.grand_total}, "
+                                           f"status {old_inv_status}→{inv.status}"))
+        if pi and not pi.is_deleted:
+            pi.paid_amount = (pi.paid_amount or Decimal(0)) + doc.amount
+            if pi.paid_amount >= pi.total:
+                pi.status = "paid"
+            await db.flush()
+            db.add(ActivityLog(entity_type="proforma_invoice", entity_id=pi.id,
+                               action="payment_cleared",
+                               description=f"Payment {doc.payment_number} cleared → PI {pi.nomor}: "
+                                           f"paid {pi.paid_amount}/{pi.total}"))
+
+    elif body.action == "cancelled":
+        # Transition from cleared to cancelled: subtract paid amount
+        if inv and not inv.is_deleted and old_status == "cleared":
+            old_inv_status = inv.status
+            inv.paid_amount = (inv.paid_amount or Decimal(0)) - doc.amount
+            if inv.paid_amount <= 0:
+                inv.paid_amount = Decimal(0)
+                if inv.status in ("paid", "partially_paid", "bad_debt"):
+                    inv.status = "locked"
+            elif inv.paid_amount < inv.grand_total and inv.status == "paid":
+                inv.status = "partially_paid"
+            await db.flush()
+            db.add(ActivityLog(entity_type="invoice", entity_id=inv.id,
+                               action="payment_cancelled",
+                               description=f"Payment {doc.payment_number} cancelled → invoice {inv.nomor}: "
+                                           f"paid adjusted to {inv.paid_amount}/{inv.grand_total}, "
+                                           f"status {old_inv_status}→{inv.status}"))
+        if pi and not pi.is_deleted and old_status == "cleared":
+            pi.paid_amount = (pi.paid_amount or Decimal(0)) - doc.amount
+            if pi.paid_amount <= 0:
+                pi.paid_amount = Decimal(0)
+                if pi.status == "paid":
+                    pi.status = "sent"
+            await db.flush()
+            db.add(ActivityLog(entity_type="proforma_invoice", entity_id=pi.id,
+                               action="payment_cancelled",
+                               description=f"Payment {doc.payment_number} cancelled → PI {pi.nomor}: "
+                                           f"paid adjusted to {pi.paid_amount}/{pi.total}"))
+
+    elif body.action == "bad_debt_declared":
+        if inv and not inv.is_deleted:
+            old_inv_status = inv.status
+            inv.status = "bad_debt"
+            await db.flush()
+            db.add(ActivityLog(entity_type="invoice", entity_id=inv.id,
+                               action="bad_debt",
+                               description=f"Payment {doc.payment_number} bad debt → invoice {inv.nomor}: "
+                                           f"status {old_inv_status}→bad_debt"))
+
+    elif body.action == "extended":
+        if inv and not inv.is_deleted and body.due_date_new:
+            inv.due_date = body.due_date_new
+            await db.flush()
+            db.add(ActivityLog(entity_type="invoice", entity_id=inv.id,
+                               action="payment_extended",
+                               description=f"Payment {doc.payment_number} extended → invoice {inv.nomor} "
+                                           f"due_date updated to {body.due_date_new}"))
+
+    # Log payment status change
+    db.add(ActivityLog(entity_type="payment", entity_id=doc.id,
+                       action=f"status_{body.action}",
+                       description=f"Payment {doc.payment_number}: {old_status}→{doc.status} "
+                                   f"({body.notes or ''})"))
     await db.flush()
 
     return PaymentResponse.model_validate(doc)

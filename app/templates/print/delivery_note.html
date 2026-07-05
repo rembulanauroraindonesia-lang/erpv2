@@ -83,6 +83,18 @@
             <div class="label">Alamat Kirim</div>
             <div class="value">{{ doc.delivery_address or '-' }}</div>
         </div>
+        <div class="info-box">
+            <div class="label">Ekspedisi</div>
+            <div class="value">{{ expedition_name or '-' }}</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Tgl Diterima</div>
+            <div class="value">{{ doc.delivered_date or '-' }}</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Nama Penerima</div>
+            <div class="value">{{ doc.receiver_name or '-' }}</div>
+        </div>
     </div>
 
     <!-- Items Table -->

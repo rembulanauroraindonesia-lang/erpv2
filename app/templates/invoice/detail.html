@@ -53,7 +53,7 @@
                 </div>
                 <div class="flex justify-between text-sm mt-2">
                     <span class="text-gray-500">Status</span>
-                    <span class="inline-flex px-2 py-0.5 text-xs rounded-full {% if doc.status == 'paid' %}bg-green-100 text-green-800{% elif doc.status == 'locked' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-700{% endif %}">
+                    <span class="inline-flex px-2 py-0.5 text-xs rounded-full {% if doc.status == 'paid' %}bg-green-100 text-green-800{% elif doc.status == 'partially_paid' %}bg-yellow-100 text-yellow-800{% elif doc.status == 'bad_debt' %}bg-red-100 text-red-800{% elif doc.status == 'locked' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-700{% endif %}">
                         {{ doc.status }}
                     </span>
                 </div>
@@ -117,6 +117,15 @@
                     <span>Grand Total</span>
                     <span>Rp {{ "{:,.0f}".format(doc.grand_total) }}</span>
                 </div>
+                {% set remaining = doc.grand_total - doc.paid_amount %}
+                <div class="flex justify-between mt-2">
+                    <span class="text-gray-500">Dibayar</span>
+                    <span class="text-green-600 font-medium">Rp {{ "{:,.0f}".format(doc.paid_amount) }}</span>
+                </div>
+                <div class="flex justify-between {% if remaining > 0 %}text-red-600 font-bold{% endif %}">
+                    <span>Sisa</span>
+                    <span>Rp {{ "{:,.0f}".format(remaining) }}</span>
+                </div>
             </div>
         </div>
     </div>
@@ -139,7 +148,7 @@
                 onclick="return confirm('Kunci Invoice?')">
             Lock
         </button>
-        {% elif doc.status == 'locked' %}
+        {% elif doc.status == 'locked' or doc.status == 'partially_paid' %}
         <button hx-post="/api/invoice/{{ doc.id }}/status" hx-target="body" hx-push-url="true"
                 hx-vals='{"status":"paid"}'
                 class="inline-flex items-center px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
@@ -152,6 +161,8 @@
                 onclick="return confirm('Tandai bad debt?')">
             Bad Debt
         </button>
+        {% endif %}
+        {% if doc.status == 'locked' %}
         <button hx-post="/api/invoice/{{ doc.id }}/status" hx-target="body" hx-push-url="true"
                 hx-vals='{"status":"cancelled"}'
                 class="inline-flex items-center px-3 py-2 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700"

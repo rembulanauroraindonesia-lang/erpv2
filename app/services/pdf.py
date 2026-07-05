@@ -80,6 +80,10 @@ async def generate_pu_pdf(doc, items, db: AsyncSession) -> bytes:
     supplier = None
     if doc.supplier_id:
         supplier = await db.get(Contact, doc.supplier_id)
+    
+    expedition = None
+    if doc.expedition_id:
+        expedition = await db.get(Contact, doc.expedition_id)
 
     item_ids = [pi.item_id for pi in items]
     item_names = {}
@@ -92,8 +96,8 @@ async def generate_pu_pdf(doc, items, db: AsyncSession) -> bytes:
         items=items,
         company=company,
         supplier_name=supplier.name if supplier else '-',
-        supplier_npwp=getattr(supplier, 'npwp', None),
-        supplier_address=getattr(supplier, 'address', None),
+        supplier_address=getattr(supplier, 'address', None) if supplier else None,
+        expedition_name=expedition.name if expedition else '-',
         item_names=item_names,
     )
     return HTML(string=html_content).write_pdf()
@@ -106,6 +110,10 @@ async def generate_dn_pdf(doc, items, db: AsyncSession) -> bytes:
     customer = None
     if doc.customer_id:
         customer = await db.get(Contact, doc.customer_id)
+    
+    expedition = None
+    if doc.expedition_id:
+        expedition = await db.get(Contact, doc.expedition_id)
 
     item_ids = [pi.item_id for pi in items]
     item_names = {}
@@ -123,6 +131,7 @@ async def generate_dn_pdf(doc, items, db: AsyncSession) -> bytes:
         customer_name=customer.name if customer else '-',
         customer_npwp=getattr(customer, 'npwp', None),
         customer_address=getattr(customer, 'address', None),
+        expedition_name=expedition.name if expedition else '-',
         item_names=item_names,
         item_units=item_units,
     )

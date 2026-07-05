@@ -67,10 +67,16 @@ async def pu_new(request: Request, db: AsyncSession = Depends(get_db)):
     items_result = await db.execute(select(Item).where(Item.is_deleted == False))
     items = items_result.scalars().all()
 
+    expeditions_result = await db.execute(
+        select(Contact).where(Contact.type == "expedition", Contact.is_deleted == False)
+    )
+    expeditions = expeditions_result.scalars().all()
+
     return templates.TemplateResponse("pickup_order/new.html", {
         "request": request,
         "suppliers": suppliers,
         "items": items,
+        "expeditions": expeditions,
         "active": "pickup_order",
     })
 
@@ -101,11 +107,16 @@ async def pu_detail(request: Request, doc_id: str, db: AsyncSession = Depends(ge
     from app.services.settings import get_all_settings
     company = await get_all_settings(db)
 
+    expedition = None
+    if doc.expedition_id:
+        expedition = await db.get(Contact, doc.expedition_id)
+
     return templates.TemplateResponse("pickup_order/detail.html", {
         "request": request,
         "doc": doc,
         "items": items,
         "supplier": supplier,
+        "expedition": expedition,
         "item_names": item_names,
         "company": company,
         "active": "pickup_order",

@@ -24,6 +24,7 @@ class SalesOrder(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
     pic_name = Column(String(100), nullable=True)
     pic_phone = Column(String(50), nullable=True)
     delivery_address = Column(Text, nullable=True)
+    customer_po_number = Column(String(100), nullable=True)
 
 
 class SalesOrderItem(Base):

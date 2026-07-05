@@ -46,6 +46,24 @@
                        class="w-full px-3 py-2 border rounded-lg text-sm">
             </div>
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ekspedisi</label>
+                <select x-model="expeditionId" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option value="">-- Pilih Ekspedisi --</option>
+                    {% for e in expeditions %}
+                    <option value="{{ e.id }}">{{ e.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tgl Diterima Customer</label>
+                <input type="date" x-model="deliveredDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Penerima</label>
+                <input type="text" x-model="receiverName" placeholder="Nama penerima di customer"
+                       class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">PIC Name</label>
                 <input type="text" x-model="picName" placeholder="Nama PIC"
                        class="w-full px-3 py-2 border rounded-lg text-sm">
@@ -141,6 +159,9 @@ function dnBuilder() {
         vehiclePlate: '',
         driverName: '',
         driverPhone: '',
+        expeditionId: '',
+        deliveredDate: '',
+        receiverName: '',
         picName: '',
         picPhone: '',
         deliveryAddress: '',
@@ -172,6 +193,9 @@ function dnBuilder() {
                 vehicle_plate: this.vehiclePlate || null,
                 driver_name: this.driverName || null,
                 driver_phone: this.driverPhone || null,
+                expedition_id: this.expeditionId || null,
+                delivered_date: this.deliveredDate || null,
+                receiver_name: this.receiverName || null,
                 pic_name: this.picName || null,
                 pic_phone: this.picPhone || null,
                 delivery_address: this.deliveryAddress || null,

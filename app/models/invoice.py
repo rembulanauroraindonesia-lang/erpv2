@@ -14,6 +14,7 @@ class Invoice(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
     total = Column(Numeric(15, 2), default=0, nullable=False)
     ppn_amount = Column(Numeric(15, 2), default=0, nullable=False)
     grand_total = Column(Numeric(15, 2), default=0, nullable=False)
+    paid_amount = Column(Numeric(15, 2), default=0, nullable=False)
     invoice_date = Column(Date, nullable=True)
     due_date = Column(Date, nullable=True)
     terms_of_payment = Column(Text, nullable=True)

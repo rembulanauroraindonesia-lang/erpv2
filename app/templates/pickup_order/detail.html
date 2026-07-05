@@ -65,6 +65,10 @@
             <div><span class="text-gray-500">No. Polisi:</span> {{ doc.vehicle_plate or '-' }}</div>
             {% if doc.po_id %}<div><span class="text-gray-500">Ref. PO:</span> {{ doc.po_id }}</div>{% endif %}
         </div>
+        <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div><span class="text-gray-500">Ekspedisi:</span> {{ expedition.name if expedition else '-' }}</div>
+            <div><span class="text-gray-500">Tgl Diterima:</span> {{ doc.received_date.strftime('%d/%m/%Y') if doc.received_date else '-' }}</div>
+        </div>
         {% if doc.notes %}
         <div class="mt-4 text-sm text-gray-600">
             <span class="text-gray-500">Catatan:</span> {{ doc.notes }}

@@ -62,6 +62,7 @@ class ProformaInvoiceResponse(BaseModel):
     subtotal: Decimal
     ppn_amount: Decimal
     total: Decimal
+    paid_amount: Decimal
     due_date: Optional[date] = None
     payment_method: Optional[str] = None
     bukti_bayar_file: Optional[str] = None

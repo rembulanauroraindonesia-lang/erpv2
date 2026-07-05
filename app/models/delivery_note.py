@@ -13,6 +13,9 @@ class DeliveryNote(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
     vehicle_plate = Column(String(20), nullable=True)
     driver_name = Column(String(100), nullable=True)
     driver_phone = Column(String(50), nullable=True)
+    expedition_id = Column(String(36), ForeignKey("contacts.id"), nullable=True)  # expedition yg kirim
+    delivered_date = Column(Date, nullable=True)  # kapan customer terima
+    receiver_name = Column(String(100), nullable=True)  # nama penerima di customer
     status = Column(String(20), default="draft", nullable=False)
     notes = Column(Text, nullable=True)
     created_by = Column(String(100), nullable=True)

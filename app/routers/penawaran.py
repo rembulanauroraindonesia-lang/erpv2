@@ -92,6 +92,7 @@ async def create_penawaran(body: PenawaranCreate, db: AsyncSession = Depends(get
         pic_name=body.pic_name,
         pic_phone=body.pic_phone,
         delivery_address=body.delivery_address,
+        customer_po_number=body.customer_po_number,
         supplier_mode=body.supplier_mode,
         price_mode=body.price_mode,
         terms_of_payment=body.terms_of_payment,

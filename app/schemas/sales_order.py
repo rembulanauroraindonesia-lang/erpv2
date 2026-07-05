@@ -36,6 +36,7 @@ class SalesOrderCreate(BaseModel):
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     delivery_address: Optional[str] = None
+    customer_po_number: Optional[str] = None
     notes: Optional[str] = None
     items: list[SOItemData] = []
 
@@ -49,6 +50,7 @@ class SalesOrderUpdate(BaseModel):
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     delivery_address: Optional[str] = None
+    customer_po_number: Optional[str] = None
     notes: Optional[str] = None
     items: Optional[list[SOItemData]] = None
 
@@ -70,6 +72,7 @@ class SalesOrderResponse(BaseModel):
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     delivery_address: Optional[str] = None
+    customer_po_number: Optional[str] = None
     notes: Optional[str] = None
     version: int
     parent_id: Optional[str] = None
