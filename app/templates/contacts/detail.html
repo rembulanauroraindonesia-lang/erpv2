@@ -62,6 +62,24 @@
                 <div class="text-sm">{{ contact.contact_person }}</div>
             </div>
             {% endif %}
+            {% if contact.contact_phone %}
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">PIC Phone</div>
+                <div class="text-sm">{{ contact.contact_phone }}</div>
+            </div>
+            {% endif %}
+            {% if contact.terms_of_payment %}
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">T.O.P</div>
+                <div class="text-sm">{{ contact.terms_of_payment }}</div>
+            </div>
+            {% endif %}
+            {% if contact.terms_of_delivery %}
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Terms of Delivery</div>
+                <div class="text-sm">{{ contact.terms_of_delivery }}</div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -38,14 +38,20 @@ async def seed():
                 Contact(type="customer", name="PT Maju Bersama", email="purchasing@majubersama.co.id",
                         phone="021-8888-1001", address="Jl. Sudirman No. 45, Jakarta Pusat 10220",
                         npwp="02.111.222.3-401.000", contact_person="Bpk. Hendra — Purchasing",
+                        contact_phone="0812-1111-1001", terms_of_payment="TOP 30 hari",
+                        terms_of_delivery="Franco Gudang Pembeli",
                         notes="TOP 30 hari, customer loyal sejak 2022"),
                 Contact(type="customer", name="CV Sumber Rezeki", email="admin@sumberrezeki.co.id",
                         phone="031-7777-2002", address="Jl. Ahmad Yani No. 22, Surabaya 60231",
                         npwp="03.222.333.4-502.000", contact_person="Ibu Rina — Finance",
+                        contact_phone="0813-2222-2002", terms_of_payment="TOP 14 hari",
+                        terms_of_delivery="Franco Gudang Pembeli",
                         notes="TOP 14 hari, pembayaran via transfer BCA"),
                 Contact(type="customer", name="UD Berkah Abadi", email="berkahabadi@gmail.com",
                         phone="022-6666-3003", address="Jl. Raya Bandung No. 10, Bandung 40123",
                         npwp="04.333.444.5-603.000", contact_person="Bpk. Agus — Direktur",
+                        contact_phone="0814-3333-3003", terms_of_payment="TOP 7 hari",
+                        terms_of_delivery="Diantar ke Alamat",
                         notes="TOP 7 hari, customer baru sejak 2026"),
             ]
             db.add_all(customers)
@@ -57,13 +63,19 @@ async def seed():
             suppliers = [
                 Contact(type="supplier", name="PT Indo Steel Industries", email="sales@indosteel.co.id",
                         phone="021-4444-5001", address="Jl. Raya Industri No. 55, Bekasi 17530",
-                        npwp="05.444.555.6-704.000", contact_person="Ibu Dewi — Sales Manager"),
+                        npwp="05.444.555.6-704.000", contact_person="Ibu Dewi — Sales Manager",
+                        contact_phone="0815-4444-5001", terms_of_payment="TOP 30 hari",
+                        terms_of_delivery="Franco Gudang Supplier"),
                 Contact(type="supplier", name="CV Metal Parts Nusantara", email="metalparts@gmail.com",
                         phone="024-3333-6002", address="Jl. Raya Semarang No. 33, Semarang 50123",
-                        npwp="06.555.666.7-805.000", contact_person="Bpk. Toni — Owner"),
+                        npwp="06.555.666.7-805.000", contact_person="Bpk. Toni — Owner",
+                        contact_phone="0816-5555-6002", terms_of_payment="Cash on Delivery",
+                        terms_of_delivery="Diantar ke Alamat"),
                 Contact(type="supplier", name="PT Global Steel Supply", email="order@globalsteel.co.id",
                         phone="021-2222-7003", address="Jl. Raya Tangerang No. 77, Tangerang 15123",
-                        npwp="07.666.777.8-906.000", contact_person="Ibu Sari — Purchasing"),
+                        npwp="07.666.777.8-906.000", contact_person="Ibu Sari — Purchasing",
+                        contact_phone="0817-6666-7003", terms_of_payment="TOP 14 hari",
+                        terms_of_delivery="Franco Gudang Pembeli"),
             ]
             db.add_all(suppliers)
             print(f"Seeded {len(suppliers)} suppliers")
@@ -73,9 +85,13 @@ async def seed():
         if result.scalar() == 0:
             expeditions = [
                 Contact(type="expedition", name="SiCepat Ekspres", phone="021-1111-8001",
-                        address="Jl. Raya Cakung No. 20, Jakarta Timur"),
+                        address="Jl. Raya Cakung No. 20, Jakarta Timur",
+                        contact_phone="0818-1111-8001", terms_of_payment="Cash on Delivery",
+                        terms_of_delivery="Diantar ke Alamat"),
                 Contact(type="expedition", name="JNE Express", phone="021-2222-9002",
-                        address="Jl. Tomang Raya No. 11, Jakarta Barat"),
+                        address="Jl. Tomang Raya No. 11, Jakarta Barat",
+                        contact_phone="0819-2222-9002", terms_of_payment="TOP 7 hari",
+                        terms_of_delivery="Diantar ke Alamat"),
             ]
             db.add_all(expeditions)
             print(f"Seeded {len(expeditions)} expeditions")
@@ -86,6 +102,8 @@ async def seed():
             marketing = [
                 Contact(type="marketing", name="Ibu Maya — Marketing Manager",
                         phone="0812-3456-7890", email="maya@rembulan-aurora.co.id",
+                        contact_phone="0812-3456-7890", terms_of_payment="TOP 14 hari",
+                        terms_of_delivery="Diantar ke Alamat",
                         notes="Staff internal — handle penawaran dan follow-up customer"),
             ]
             db.add_all(marketing)

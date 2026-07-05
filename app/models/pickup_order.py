@@ -15,6 +15,12 @@ class PickupOrder(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
     notes = Column(Text, nullable=True)
     created_by = Column(String(100), nullable=True)
 
+    pic_name = Column(String(100), nullable=True)
+    pic_phone = Column(String(50), nullable=True)
+    pickup_address = Column(Text, nullable=True)
+    terms_of_payment = Column(Text, nullable=True)
+    terms_of_delivery = Column(Text, nullable=True)
+
 
 class PickupOrderItem(Base):
     __tablename__ = "pickup_order_items"

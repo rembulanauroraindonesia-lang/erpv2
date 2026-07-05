@@ -40,6 +40,7 @@ td { padding: 8px 6px; border: 1px solid #e5e7eb; font-size: 10px; }
     <div class="box"><div class="label">Jatuh Tempo</div><div class="value">{{ doc.due_date.strftime('%d %B %Y') if doc.due_date else '-' }}</div></div>
     <div class="box"><div class="label">Alamat</div><div class="value">{{ customer_address or '-' }}</div></div>
     <div class="box"><div class="label">Pembayaran</div><div class="value">{{ doc.terms_of_payment or '-' }}</div></div>
+    <div class="box"><div class="label">PIC</div><div class="value">{{ doc.pic_name or '-' }} ({{ doc.pic_phone or '-' }})</div></div>
 </div>
 <table>
     <thead><tr><th style="width:30px">No</th><th>Item</th><th style="width:60px;text-align:right">Qty</th><th style="width:100px;text-align:right">Harga</th><th style="width:100px;text-align:right">Total</th></tr></thead>

@@ -57,6 +57,9 @@ async def create_dn(body: DeliveryNoteCreate, db: AsyncSession = Depends(get_db)
 
     doc = DeliveryNote(
         nomor=nomor, customer_id=body.customer_id, so_id=body.so_id,
+        pic_name=body.pic_name, pic_phone=body.pic_phone,
+        delivery_address=body.delivery_address,
+        terms_of_delivery=body.terms_of_delivery,
         delivery_date=body.delivery_date or date.today(),
         vehicle_plate=body.vehicle_plate, notes=body.notes,
     )

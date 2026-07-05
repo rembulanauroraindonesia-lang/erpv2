@@ -73,6 +73,8 @@ async def create_invoice(body: InvoiceCreate, db: AsyncSession = Depends(get_db)
 
     doc = Invoice(
         nomor=nomor, customer_id=body.customer_id,
+        pic_name=body.pic_name, pic_phone=body.pic_phone,
+        terms_of_delivery=body.terms_of_delivery,
         sales_order_id=body.sales_order_id,
         delivery_note_id=body.delivery_note_id,
         total=totals["total"], ppn_amount=totals["ppn_amount"],

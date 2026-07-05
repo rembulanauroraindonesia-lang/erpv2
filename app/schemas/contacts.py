@@ -12,6 +12,9 @@ class ContactCreate(BaseModel):
     npwp: Optional[str] = None
     tax_info: Optional[str] = None
     contact_person: Optional[str] = None
+    contact_phone: Optional[str] = None
+    terms_of_payment: Optional[str] = None
+    terms_of_delivery: Optional[str] = None
     notes: Optional[str] = None
 
 
@@ -24,6 +27,9 @@ class ContactUpdate(BaseModel):
     npwp: Optional[str] = None
     tax_info: Optional[str] = None
     contact_person: Optional[str] = None
+    contact_phone: Optional[str] = None
+    terms_of_payment: Optional[str] = None
+    terms_of_delivery: Optional[str] = None
     notes: Optional[str] = None
 
 
@@ -37,6 +43,9 @@ class ContactResponse(BaseModel):
     npwp: Optional[str] = None
     tax_info: Optional[str] = None
     contact_person: Optional[str] = None
+    contact_phone: Optional[str] = None
+    terms_of_payment: Optional[str] = None
+    terms_of_delivery: Optional[str] = None
     notes: Optional[str] = None
     created_at: datetime
     updated_at: datetime

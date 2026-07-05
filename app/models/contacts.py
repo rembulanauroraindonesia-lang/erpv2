@@ -14,6 +14,9 @@ class Contact(TimestampMixin, SoftDeleteMixin, Base):
     npwp = Column(String(50), nullable=True)
     tax_info = Column(Text, nullable=True)
     contact_person = Column(String(100), nullable=True)
+    contact_phone = Column(String(50), nullable=True)  # PIC mobile number
+    terms_of_payment = Column(Text, nullable=True)  # default payment terms
+    terms_of_delivery = Column(Text, nullable=True)  # default delivery terms
     notes = Column(Text, nullable=True)
 
 

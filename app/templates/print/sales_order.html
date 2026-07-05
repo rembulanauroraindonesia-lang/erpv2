@@ -71,6 +71,14 @@
             <div class="label">Ket. Pembayaran</div>
             <div class="value">{{ doc.terms_of_payment or '-' }}</div>
         </div>
+        <div class="info-box">
+            <div class="label">PIC</div>
+            <div class="value">{{ doc.pic_name or '-' }} ({{ doc.pic_phone or '-' }})</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Alamat Kirim</div>
+            <div class="value">{{ doc.delivery_address or '-' }}</div>
+        </div>
     </div>
 
     <!-- Items Table -->

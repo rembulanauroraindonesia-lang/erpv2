@@ -15,6 +15,11 @@ class DeliveryNote(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
     notes = Column(Text, nullable=True)
     created_by = Column(String(100), nullable=True)
 
+    pic_name = Column(String(100), nullable=True)
+    pic_phone = Column(String(50), nullable=True)
+    delivery_address = Column(Text, nullable=True)
+    terms_of_delivery = Column(Text, nullable=True)
+
 
 class DeliveryNoteItem(Base):
     __tablename__ = "delivery_note_items"

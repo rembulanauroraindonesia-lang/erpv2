@@ -64,6 +64,7 @@ async def create_po(body: PurchaseOrderCreate, db: AsyncSession = Depends(get_db
 
     doc = PurchaseOrder(
         nomor=nomor, supplier_id=body.supplier_id,
+        pic_name=body.pic_name, pic_phone=body.pic_phone,
         terms_of_payment=body.terms_of_payment, terms_of_delivery=body.terms_of_delivery,
         order_date=body.order_date or date.today(), expected_date=body.expected_date,
         notes=body.notes, total=total,

@@ -20,6 +20,10 @@ class Invoice(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
     notes = Column(Text, nullable=True)
     created_by = Column(String(100), nullable=True)
 
+    pic_name = Column(String(100), nullable=True)
+    pic_phone = Column(String(50), nullable=True)
+    terms_of_delivery = Column(Text, nullable=True)
+
 
 class InvoiceItem(Base):
     __tablename__ = "invoice_items"

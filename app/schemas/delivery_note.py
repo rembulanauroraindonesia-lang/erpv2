@@ -26,6 +26,10 @@ class DeliveryNoteCreate(BaseModel):
     so_id: Optional[str] = None
     delivery_date: Optional[date] = None
     vehicle_plate: Optional[str] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
+    delivery_address: Optional[str] = None
+    terms_of_delivery: Optional[str] = None
     notes: Optional[str] = None
     items: list[DNItemData] = []
 
@@ -35,6 +39,10 @@ class DeliveryNoteUpdate(BaseModel):
     so_id: Optional[str] = None
     delivery_date: Optional[date] = None
     vehicle_plate: Optional[str] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
+    delivery_address: Optional[str] = None
+    terms_of_delivery: Optional[str] = None
     notes: Optional[str] = None
     items: Optional[list[DNItemData]] = None
 
@@ -46,6 +54,10 @@ class DeliveryNoteResponse(BaseModel):
     so_id: Optional[str] = None
     delivery_date: Optional[date] = None
     vehicle_plate: Optional[str] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
+    delivery_address: Optional[str] = None
+    terms_of_delivery: Optional[str] = None
     status: str
     notes: Optional[str] = None
     version: int

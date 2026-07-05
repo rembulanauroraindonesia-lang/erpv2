@@ -17,6 +17,9 @@ class PurchaseOrder(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
     notes = Column(Text, nullable=True)
     created_by = Column(String(100), nullable=True)
 
+    pic_name = Column(String(100), nullable=True)
+    pic_phone = Column(String(50), nullable=True)
+
 
 class PurchaseOrderItem(Base):
     __tablename__ = "purchase_order_items"

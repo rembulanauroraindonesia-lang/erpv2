@@ -63,6 +63,27 @@
                    class="w-full border rounded-lg px-3 py-2 text-sm">
         </div>
         <div>
+            <label class="block text-sm font-medium mb-1">PIC Phone</label>
+            <input type="text" name="contact_phone" value="{{ contact.contact_phone if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div>
+            <label class="block text-sm font-medium mb-1">T.O.P (Default)</label>
+            <input type="text" name="terms_of_payment" value="{{ contact.terms_of_payment if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Terms of Delivery</label>
+            <input type="text" name="terms_of_delivery" value="{{ contact.terms_of_delivery if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div>
             <label class="block text-sm font-medium mb-1">Catatan</label>
             <input type="text" name="notes" value="{{ contact.notes if contact else '' }}"
                    class="w-full border rounded-lg px-3 py-2 text-sm">

@@ -203,6 +203,18 @@
                     <td>: {{ customer.email }}</td>
                 </tr>
                 {% endif %}
+                {% if doc.pic_name %}
+                <tr>
+                    <td class="label">PIC</td>
+                    <td>: {{ doc.pic_name }} ({{ doc.pic_phone or '-' }})</td>
+                </tr>
+                {% endif %}
+                {% if doc.delivery_address %}
+                <tr>
+                    <td class="label">Alamat Kirim</td>
+                    <td>: {{ doc.delivery_address }}</td>
+                </tr>
+                {% endif %}
             </table>
             {% endif %}
         </div>

@@ -44,6 +44,9 @@ class PenawaranCreate(BaseModel):
     terms_of_payment: Optional[str] = None
     terms_of_delivery: Optional[str] = None
     validity_days: Optional[int] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
+    delivery_address: Optional[str] = None
     notes: Optional[str] = None
     items: list[PenawaranItemData] = []
 
@@ -55,6 +58,9 @@ class PenawaranUpdate(BaseModel):
     terms_of_payment: Optional[str] = None
     terms_of_delivery: Optional[str] = None
     validity_days: Optional[int] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
+    delivery_address: Optional[str] = None
     notes: Optional[str] = None
     items: Optional[list[PenawaranItemData]] = None
 
@@ -68,6 +74,9 @@ class PenawaranResponse(BaseModel):
     terms_of_payment: Optional[str] = None
     terms_of_delivery: Optional[str] = None
     validity_days: Optional[int] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
+    delivery_address: Optional[str] = None
     notes: Optional[str] = None
     status: str
     total_beli: Decimal

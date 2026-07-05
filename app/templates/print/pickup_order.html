@@ -67,6 +67,14 @@
             <div class="label">Ref. PO</div>
             <div class="value">{{ doc.po_id or '-' }}</div>
         </div>
+        <div class="info-box">
+            <div class="label">PIC</div>
+            <div class="value">{{ doc.pic_name or '-' }} ({{ doc.pic_phone or '-' }})</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Alamat Pickup</div>
+            <div class="value">{{ doc.pickup_address or '-' }}</div>
+        </div>
     </div>
 
     <!-- Items Table -->
@@ -90,6 +98,8 @@
     </table>
 
     <div style="clear:both; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+        {% if doc.terms_of_payment %}<div><strong>T.O.P:</strong> {{ doc.terms_of_payment }}</div>{% endif %}
+        {% if doc.terms_of_delivery %}<div><strong>Ket. Pengiriman:</strong> {{ doc.terms_of_delivery }}</div>{% endif %}
         {% if doc.notes %}<div><strong>Catatan:</strong> {{ doc.notes }}</div>{% endif %}
     </div>
 

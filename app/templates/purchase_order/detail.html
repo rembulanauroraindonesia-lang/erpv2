@@ -73,6 +73,12 @@
         {% endif %}
     </div>
 
+    <!-- PIC -->
+    <div class="bg-gray-50 rounded-lg border p-4 text-sm space-y-2">
+        <div class="text-xs font-semibold text-gray-500 uppercase">PIC</div>
+        <div>PIC: <strong>{{ doc.pic_name or '-' }}</strong> ({{ doc.pic_phone or '-' }})</div>
+    </div>
+
     <!-- Items -->
     <div class="bg-white rounded-lg border overflow-hidden">
         <table class="w-full table-fixed text-sm">

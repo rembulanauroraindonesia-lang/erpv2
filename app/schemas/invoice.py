@@ -33,6 +33,9 @@ class InvoiceCreate(BaseModel):
     invoice_date: Optional[date] = None
     due_date: Optional[date] = None
     terms_of_payment: Optional[str] = None
+    terms_of_delivery: Optional[str] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
     notes: Optional[str] = None
     items: list[InvItemData] = []
     include_ppn: bool = True  # True = harga exclude PPN
@@ -45,6 +48,9 @@ class InvoiceUpdate(BaseModel):
     invoice_date: Optional[date] = None
     due_date: Optional[date] = None
     terms_of_payment: Optional[str] = None
+    terms_of_delivery: Optional[str] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
     notes: Optional[str] = None
     items: Optional[list[InvItemData]] = None
 
@@ -62,6 +68,9 @@ class InvoiceResponse(BaseModel):
     invoice_date: Optional[date] = None
     due_date: Optional[date] = None
     terms_of_payment: Optional[str] = None
+    terms_of_delivery: Optional[str] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
     notes: Optional[str] = None
     version: int
     parent_id: Optional[str] = None
