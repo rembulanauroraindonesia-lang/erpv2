@@ -98,6 +98,7 @@ async def create_penawaran(body: PenawaranCreate, db: AsyncSession = Depends(get
         total_jual=totals["total_jual"],
         ppn_amount=totals["ppn_amount"],
         grand_total=totals["grand_total"],
+        margin=totals["total_jual"] - totals["total_beli"],
     )
     db.add(doc)
     await db.flush()
@@ -169,6 +170,7 @@ async def update_penawaran(
         doc.total_jual = totals["total_jual"]
         doc.ppn_amount = totals["ppn_amount"]
         doc.grand_total = totals["grand_total"]
+        doc.margin = totals["total_jual"] - totals["total_beli"]
 
         # Delete old items
         await db.execute(

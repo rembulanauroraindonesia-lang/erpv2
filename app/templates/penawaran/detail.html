@@ -47,6 +47,24 @@
 
 {% block content %}
 <div class="space-y-6">
+    <!-- Company Info (Sender) -->
+    <div class="bg-blue-50/50 rounded-lg border border-blue-100 p-4">
+        <div class="flex items-center gap-3 mb-2">
+            {% if company.get('logo_path') %}
+            <img src="{{ company.logo_path }}" class="h-10" alt="Logo">
+            {% endif %}
+            <div>
+                <div class="font-semibold text-sm">{{ company.get('company_name', 'PT Rembulan Aurora Indonesia') }}</div>
+                <div class="text-xs text-gray-500">{{ company.get('company_address', '') }}</div>
+            </div>
+        </div>
+        <div class="text-xs text-gray-500 flex flex-wrap gap-x-6">
+            {% if company.get('company_phone') %}<span>Telp: {{ company.company_phone }}</span>{% endif %}
+            {% if company.get('company_email') %}<span>Email: {{ company.company_email }}</span>{% endif %}
+            {% if company.get('company_npwp') %}<span>NPWP: {{ company.company_npwp }}</span>{% endif %}
+        </div>
+    </div>
+
     <!-- Header Info -->
     <div class="bg-white rounded-lg border p-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">

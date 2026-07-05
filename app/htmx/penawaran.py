@@ -143,6 +143,9 @@ async def penawaran_detail(
         s_result = await db.execute(select(Contact).where(Contact.id.in_(supplier_ids)))
         supplier_names = {c.id: c.name for c in s_result.scalars().all()}
 
+    from app.services.settings import get_all_settings
+    company = await get_all_settings(db)
+
     return templates.TemplateResponse("penawaran/detail.html", {
         "request": request,
         "doc": doc,
@@ -150,6 +153,7 @@ async def penawaran_detail(
         "customer": customer,
         "item_names": item_names,
         "supplier_names": supplier_names,
+        "company": company,
         "active": "penawaran",
     })
 

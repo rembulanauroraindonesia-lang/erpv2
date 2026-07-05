@@ -7,6 +7,8 @@ class SettingsUpdate(BaseModel):
     company_address: Optional[str] = None
     company_phone: Optional[str] = None
     company_email: Optional[str] = None
+    company_npwp: Optional[str] = None
+    company_city: Optional[str] = None
     default_supplier_mode: Optional[str] = None
     default_price_mode: Optional[str] = None
     default_ppn_rate: Optional[float] = None

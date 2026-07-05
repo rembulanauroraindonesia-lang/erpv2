@@ -1,67 +1,116 @@
-"""Seed script: populate database with sample data."""
+"""Seed data for development."""
 import asyncio
-from sqlalchemy import select
+from sqlalchemy import text
 from app.database import async_session_factory
-from app.models.contacts import Contact
+from app.models.contacts import Contact, ContactTopHistory
 from app.models.items import Item
-from app.models.system import Settings
+from app.services.settings import get_setting, set_setting
 
 
 async def seed():
     async with async_session_factory() as db:
-        # Company settings
-        defaults = [
-            ("company_name", "PT Rembulan Aurora Indonesia"),
-            ("company_address", "Jl. Raya Bisnis No. 1, Jakarta"),
-            ("company_phone", "021-1234567"),
-            ("company_email", "info@rembulanaurora.co.id"),
-        ]
-        for key, value in defaults:
-            existing = await db.execute(
-                select(Settings).where(Settings.key == key)
-            )
-            if not existing.scalar_one_or_none():
-                db.add(Settings(key=key, value=value))
+        # --- Settings (company + defaults) ---
+        if await get_setting(db, "company_name") is None:
+            await set_setting(db, "company_name", "PT Rembulan Aurora Indonesia")
+        if await get_setting(db, "company_address") is None:
+            await set_setting(db, "company_address", "Jl. Raya Industri No. 88, Kawasan Industri Pulogadung, Jakarta Timur")
+        if await get_setting(db, "company_phone") is None:
+            await set_setting(db, "company_phone", "021-5555-1234")
+        if await get_setting(db, "company_email") is None:
+            await set_setting(db, "company_email", "info@rembulan-aurora.co.id")
+        if await get_setting(db, "company_npwp") is None:
+            await set_setting(db, "company_npwp", "01.234.567.8-901.000")
+        if await get_setting(db, "company_city") is None:
+            await set_setting(db, "company_city", "Jakarta")
+        if await get_setting(db, "default_supplier_mode") is None:
+            await set_setting(db, "default_supplier_mode", "single")
+        if await get_setting(db, "default_price_mode") is None:
+            await set_setting(db, "default_price_mode", "include_ppn")
+        if await get_setting(db, "default_ppn_rate") is None:
+            await set_setting(db, "default_ppn_rate", 11)
+        if await get_setting(db, "default_validity_days") is None:
+            await set_setting(db, "default_validity_days", 14)
 
-        # Customers
-        customers = [
-            Contact(type="customer", name="PT Maju Bersama", email="info@majubersama.co.id", phone="021-5551234", address="Jakarta"),
-            Contact(type="customer", name="CV Sinar Jaya", email="sinar@jaya.com", phone="022-5557890", address="Bandung"),
-            Contact(type="customer", name="PT Global Teknik", email="info@globaltek.co.id", phone="031-5554567", address="Surabaya"),
-        ]
-        for c in customers:
-            db.add(c)
+        # --- Customers ---
+        result = await db.execute(text("SELECT COUNT(*) FROM contacts WHERE type='customer'"))
+        if result.scalar() == 0:
+            customers = [
+                Contact(type="customer", name="PT Maju Bersama", email="purchasing@majubersama.co.id",
+                        phone="021-8888-1001", address="Jl. Sudirman No. 45, Jakarta Pusat 10220",
+                        npwp="02.111.222.3-401.000", contact_person="Bpk. Hendra — Purchasing",
+                        notes="TOP 30 hari, customer loyal sejak 2022"),
+                Contact(type="customer", name="CV Sumber Rezeki", email="admin@sumberrezeki.co.id",
+                        phone="031-7777-2002", address="Jl. Ahmad Yani No. 22, Surabaya 60231",
+                        npwp="03.222.333.4-502.000", contact_person="Ibu Rina — Finance",
+                        notes="TOP 14 hari, pembayaran via transfer BCA"),
+                Contact(type="customer", name="UD Berkah Abadi", email="berkahabadi@gmail.com",
+                        phone="022-6666-3003", address="Jl. Raya Bandung No. 10, Bandung 40123",
+                        npwp="04.333.444.5-603.000", contact_person="Bpk. Agus — Direktur",
+                        notes="TOP 7 hari, customer baru sejak 2026"),
+            ]
+            db.add_all(customers)
+            print(f"Seeded {len(customers)} customers")
 
-        # Suppliers
-        suppliers = [
-            Contact(type="supplier", name="PT Bahan Baku Utama", email="sales@bahanbaku.co.id", phone="021-5558888", address="Tangerang"),
-            Contact(type="supplier", name="CV Material Prima", email="info@materialprima.com", phone="021-5559999", address="Bekasi"),
-            Contact(type="supplier", name="PT Sumber Daya Mandiri", email="sales@sumberdaya.co.id", phone="022-5556666", address="Bandung"),
-        ]
-        for s in suppliers:
-            db.add(s)
+        # --- Suppliers ---
+        result = await db.execute(text("SELECT COUNT(*) FROM contacts WHERE type='supplier'"))
+        if result.scalar() == 0:
+            suppliers = [
+                Contact(type="supplier", name="PT Indo Steel Industries", email="sales@indosteel.co.id",
+                        phone="021-4444-5001", address="Jl. Raya Industri No. 55, Bekasi 17530",
+                        npwp="05.444.555.6-704.000", contact_person="Ibu Dewi — Sales Manager"),
+                Contact(type="supplier", name="CV Metal Parts Nusantara", email="metalparts@gmail.com",
+                        phone="024-3333-6002", address="Jl. Raya Semarang No. 33, Semarang 50123",
+                        npwp="06.555.666.7-805.000", contact_person="Bpk. Toni — Owner"),
+                Contact(type="supplier", name="PT Global Steel Supply", email="order@globalsteel.co.id",
+                        phone="021-2222-7003", address="Jl. Raya Tangerang No. 77, Tangerang 15123",
+                        npwp="07.666.777.8-906.000", contact_person="Ibu Sari — Purchasing"),
+            ]
+            db.add_all(suppliers)
+            print(f"Seeded {len(suppliers)} suppliers")
 
-        # Expeditions
-        expeditions = [
-            Contact(type="expedition", name="JNE Express", email="cs@jne.co.id", phone="021-5551111"),
-            Contact(type="expedition", name="SiCepat", email="info@sicepat.com", phone="021-5552222"),
-        ]
-        for e in expeditions:
-            db.add(e)
+        # --- Expeditions ---
+        result = await db.execute(text("SELECT COUNT(*) FROM contacts WHERE type='expedition'"))
+        if result.scalar() == 0:
+            expeditions = [
+                Contact(type="expedition", name="SiCepat Ekspres", phone="021-1111-8001",
+                        address="Jl. Raya Cakung No. 20, Jakarta Timur"),
+                Contact(type="expedition", name="JNE Express", phone="021-2222-9002",
+                        address="Jl. Tomang Raya No. 11, Jakarta Barat"),
+            ]
+            db.add_all(expeditions)
+            print(f"Seeded {len(expeditions)} expeditions")
 
-        # Items
-        items = [
-            Item(name="Baja Ringan C75", sku="BR-C75", unit="batang", default_hpp=85000),
-            Item(name="Baja Ringan C100", sku="BR-C100", unit="batang", default_hpp=110000),
-            Item(name="Atap Galvalum 0.35mm", sku="AG-035", unit="lembar", default_hpp=75000),
-            Item(name="Skrup Baja Ringan", sku="SKR-BR", unit="box", default_hpp=45000),
-            Item(name="Dynabolt M10x80", sku="DB-M10", unit="box", default_hpp=35000),
-        ]
-        for i in items:
-            db.add(i)
+        # --- Marketing contacts ---
+        result = await db.execute(text("SELECT COUNT(*) FROM contacts WHERE type='marketing'"))
+        if result.scalar() == 0:
+            marketing = [
+                Contact(type="marketing", name="Ibu Maya — Marketing Manager",
+                        phone="0812-3456-7890", email="maya@rembulan-aurora.co.id",
+                        notes="Staff internal — handle penawaran dan follow-up customer"),
+            ]
+            db.add_all(marketing)
+            print(f"Seeded {len(marketing)} marketing contacts")
+
+        # --- Items ---
+        result = await db.execute(text("SELECT COUNT(*) FROM items"))
+        if result.scalar() == 0:
+            items = [
+                Item(name="Besi Beton Ulir 13mm", sku="BBU-013", unit="kg", default_hpp=12500,
+                     notes="Standar SNI, panjang 12m"),
+                Item(name="Plat Besi 3mm", sku="PLT-003", unit="kg", default_hpp=11000,
+                     notes="Ukuran 1.2m x 2.4m"),
+                Item(name="Pipa Galvanis 2 inch", sku="PGV-200", unit="pcs", default_hpp=185000,
+                     notes="Panjang 6m, SCH 40"),
+                Item(name="Wiremesh M8", sku="WM8-015", unit="lembar", default_hpp=450000,
+                     notes="Ukuran 2.1m x 5.4m"),
+                Item(name="Baut Mur 12mm", sku="BM-012", unit="pcs", default_hpp=2500,
+                     notes="Grade 8.8, full drat"),
+            ]
+            db.add_all(items)
+            print(f"Seeded {len(items)} items")
 
         await db.commit()
-        print(f"Seeded: {len(customers)} customers, {len(suppliers)} suppliers, {len(expeditions)} expeditions, {len(items)} items, {len(defaults)} settings")
+        print("Seed complete!")
 
 
 if __name__ == "__main__":

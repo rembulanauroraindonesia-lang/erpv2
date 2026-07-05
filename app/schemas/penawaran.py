@@ -74,6 +74,7 @@ class PenawaranResponse(BaseModel):
     total_jual: Decimal
     ppn_amount: Decimal
     grand_total: Decimal
+    margin: Optional[Decimal] = None
     version: int
     parent_id: Optional[str] = None
     is_current: bool

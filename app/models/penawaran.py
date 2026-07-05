@@ -19,6 +19,8 @@ class Penawaran(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
     total_jual = Column(Numeric(15, 2), default=0, nullable=False)
     ppn_amount = Column(Numeric(15, 2), default=0, nullable=False)
     grand_total = Column(Numeric(15, 2), default=0, nullable=False)
+    margin = Column(Numeric(15, 2), nullable=True)
+    created_by = Column(String(100), nullable=True)
 
 
 class PenawaranItem(Base):
