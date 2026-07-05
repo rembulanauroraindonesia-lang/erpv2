@@ -1,0 +1,53 @@
+{# Reusable upload component. Pass: module, entity_id, field, accept, label #}
+<div x-data="{
+    uploading: false,
+    files: [],
+    async uploadFile(input) {
+        if (!input.files.length) return;
+        this.uploading = true;
+        const fd = new FormData();
+        fd.append('file', input.files[0]);
+        fd.append('module', '{{ module }}');
+        fd.append('entity_id', '{{ entity_id }}');
+        fd.append('field', '{{ field }}');
+        try {
+            const res = await fetch('/api/uploads', { method: 'POST', body: fd });
+            if (res.ok) {
+                const data = await res.json();
+                this.files.push(data);
+                showToast('File berhasil diupload', 'success');
+            } else {
+                const err = await res.json();
+                showToast(err.detail || 'Upload gagal', 'error');
+            }
+        } catch(e) {
+            showToast('Upload gagal', 'error');
+        }
+        this.uploading = false;
+        input.value = '';
+    },
+    async deleteFile(path) {
+        if (!confirm('Hapus file ini?')) return;
+        const res = await fetch('/api/uploads/' + path, { method: 'DELETE' });
+        if (res.ok) {
+            this.files = this.files.filter(f => f.path !== path);
+            showToast('File dihapus', 'success');
+        }
+    }
+}">
+    <label class="block text-sm font-medium mb-1">{{ label | default('Upload File') }}</label>
+    <div class="border-2 border-dashed rounded-lg p-4 text-center">
+        <input type="file" accept="{{ accept | default('.pdf,.jpg,.jpeg,.png,.webp') }}"
+               @change="uploadFile($event.target)"
+               class="text-sm" :disabled="uploading">
+        <p x-show="uploading" class="text-xs text-gray-500 mt-1">Mengupload...</p>
+    </div>
+    <div class="mt-2 space-y-1">
+        <template x-for="file in files" :key="file.path">
+            <div class="flex items-center justify-between bg-gray-50 rounded px-3 py-2 text-sm">
+                <span x-text="file.filename" class="truncate"></span>
+                <button @click="deleteFile(file.path)" class="text-red-500 hover:text-red-700 ml-2">&times;</button>
+            </div>
+        </template>
+    </div>
+</div>

@@ -27,6 +27,8 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 from app.routers import contacts as contacts_api
 from app.routers import items as items_api
 from app.routers import penawaran as penawaran_api
+from app.routers import uploads as uploads_api
+from app.routers import pdf as pdf_router
 from app.htmx import contacts as contacts_htmx
 from app.htmx import items as items_htmx
 from app.htmx import penawaran as penawaran_htmx
@@ -34,6 +36,8 @@ from app.htmx import penawaran as penawaran_htmx
 app.include_router(contacts_api.router)
 app.include_router(items_api.router)
 app.include_router(penawaran_api.router)
+app.include_router(uploads_api.router)
+app.include_router(pdf_router.router)
 app.include_router(contacts_htmx.router)
 app.include_router(items_htmx.router)
 app.include_router(penawaran_htmx.router)
