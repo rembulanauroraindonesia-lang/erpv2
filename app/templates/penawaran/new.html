@@ -1,0 +1,345 @@
+{% extends "shared/_base.html" %}
+
+{% block title %}{% if edit_mode %}Edit{% else %}Buat{% endif %} Penawaran — RAI ERP{% endblock %}
+{% block page_title %}
+<div class="flex items-center gap-3">
+    <a href="/app/penawaran" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+    </a>
+    {% if edit_mode %}Edit{% else %}Buat{% endif %} Penawaran
+</div>
+{% endblock %}
+
+{% block content %}
+<div x-data="penawaranBuilder()" x-init="init()">
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg border p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                <select x-model="selectedCustomer" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option value="">-- Pilih Customer --</option>
+                    <template x-for="c in allCustomers" :key="c.id">
+                        <option :value="c.id" x-text="c.name"></option>
+                    </template>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Mode Supplier</label>
+                <select x-model="supplierMode" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option value="single">Single Supplier</option>
+                    <option value="multi">Multi Supplier</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Mode Harga</label>
+                <select x-model="priceMode" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option value="include_ppn">Include PPN</option>
+                    <option value="exclude_ppn">Exclude PPN</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Berlaku (hari)</label>
+                <input type="number" x-model.number="validityDays" min="1"
+                       class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ket. Pembayaran</label>
+                <input type="text" x-model="termsOfPayment" placeholder="Mis: 30 hari setelah invoice"
+                       class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ket. Pengiriman</label>
+                <input type="text" x-model="termsOfDelivery" placeholder="Mis: Franco Jakarta"
+                       class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div class="md:col-span-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                <textarea x-model="notes" rows="2" placeholder="Catatan tambahan..."
+                          class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="bg-white rounded-lg border mb-6 overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b">
+                <tr>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-10">#</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 min-w-[180px]">Item</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 min-w-[150px]"
+                        x-show="supplierMode === 'multi'">Supplier</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-20">Qty</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-24">Berat Beli</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-28">HPP/Unit</th>
+                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 w-28">Total Beli</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-28">Harga Jual</th>
+                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 w-28">Total Jual</th>
+                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 w-16">Diff</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-24"
+                        x-show="items.some(i => i.different_scale)">Berat Jual</th>
+                    <th class="px-3 py-2 w-10"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="(item, index) in items" :key="index">
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-3 py-2 text-gray-500" x-text="index + 1"></td>
+                        <td class="px-3 py-2">
+                            <select x-model="item.item_id" class="w-full px-2 py-1 border rounded text-sm">
+                                <option value="">-- Pilih --</option>
+                                <template x-for="i in allItems" :key="i.id">
+                                    <option :value="i.id" x-text="i.name"></option>
+                                </template>
+                            </select>
+                        </td>
+                        <td class="px-3 py-2" x-show="supplierMode === 'multi'">
+                            <select x-model="item.supplier_id" class="w-full px-2 py-1 border rounded text-sm">
+                                <option value="">-- Pilih --</option>
+                                <template x-for="s in allSuppliers" :key="s.id">
+                                    <option :value="s.id" x-text="s.name"></option>
+                                </template>
+                            </select>
+                        </td>
+                        <td class="px-3 py-2">
+                            <input type="number" x-model.number="item.quantity" min="0" step="0.01"
+                                   class="w-full px-2 py-1 border rounded text-sm text-right">
+                        </td>
+                        <td class="px-3 py-2">
+                            <input type="number" x-model.number="item.berat_beli_per_unit" min="0" step="0.0001"
+                                   class="w-full px-2 py-1 border rounded text-sm text-right">
+                        </td>
+                        <td class="px-3 py-2">
+                            <input type="number" x-model.number="item.hpp_per_unit" min="0" step="1"
+                                   class="w-full px-2 py-1 border rounded text-sm text-right">
+                        </td>
+                        <td class="px-3 py-2 text-right font-mono text-gray-700"
+                            x-text="formatRp(calcRowBeli(item))"></td>
+                        <td class="px-3 py-2">
+                            <input type="number" x-model.number="item.harga_jual_per_unit" min="0" step="1"
+                                   class="w-full px-2 py-1 border rounded text-sm text-right">
+                        </td>
+                        <td class="px-3 py-2 text-right font-mono text-gray-700"
+                            x-text="formatRp(calcRowJual(item))"></td>
+                        <td class="px-3 py-2 text-center">
+                            <input type="checkbox" x-model="item.different_scale" class="rounded">
+                        </td>
+                        <td class="px-3 py-2" x-show="item.different_scale">
+                            <input type="number" x-model.number="item.berat_jual_per_unit" min="0" step="0.0001"
+                                   class="w-full px-2 py-1 border rounded text-sm text-right">
+                        </td>
+                        <td class="px-3 py-2">
+                            <button @click="removeItem(index)" class="text-red-500 hover:text-red-700"
+                                    title="Hapus baris">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Item Button -->
+    <div class="mb-6">
+        <button @click="addItem()"
+                class="px-4 py-2 border border-dashed border-gray-400 text-gray-600 rounded-lg hover:bg-gray-50 text-sm">
+            + Tambah Item
+        </button>
+    </div>
+
+    <!-- Summary -->
+    <div class="bg-white rounded-lg border p-6 mb-6">
+        <div class="flex justify-end">
+            <div class="w-full md:w-80 space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Total Beli</span>
+                    <span class="font-mono" x-text="formatRp(totalBeli)"></span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Total Jual</span>
+                    <span class="font-mono" x-text="formatRp(totalJual)"></span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">PPN (11%)</span>
+                    <span class="font-mono" x-text="formatRp(ppnAmount)"></span>
+                </div>
+                <div class="border-t pt-3 flex justify-between font-semibold">
+                    <span>Grand Total</span>
+                    <span class="font-mono text-blue-600" x-text="formatRp(grandTotal)"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-3">
+        <button @click="save()"
+                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+            Simpan
+        </button>
+        <a href="/app/penawaran"
+           class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium">
+            Batal
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function penawaranBuilder() {
+    return {
+        items: [],
+        supplierMode: 'single',
+        priceMode: 'include_ppn',
+        allItems: [],
+        allSuppliers: [],
+        allCustomers: [],
+        selectedCustomer: '',
+        validityDays: 30,
+        notes: '',
+        termsOfPayment: '',
+        termsOfDelivery: '',
+        editMode: {% if edit_mode %}true{% else %}false{% endif %},
+        editId: null,
+
+        init() {
+            Promise.all([
+                fetch('/api/items?per_page=200').then(r => r.json()),
+                fetch('/api/contacts?type=supplier&per_page=200').then(r => r.json()),
+                fetch('/api/contacts?type=customer&per_page=200').then(r => r.json()),
+            ]).then(([items, suppliers, customers]) => {
+                this.allItems = items.data || [];
+                this.allSuppliers = suppliers.data || [];
+                this.allCustomers = customers.data || [];
+
+                // Load existing data if editing
+                {% if edit_mode and existing_data %}
+                const existing = JSON.parse('{{ existing_data | safe }}');
+                this.editId = existing.id;
+                this.selectedCustomer = existing.customer_id;
+                this.supplierMode = existing.supplier_mode;
+                this.priceMode = existing.price_mode;
+                this.termsOfPayment = existing.terms_of_payment;
+                this.termsOfDelivery = existing.terms_of_delivery;
+                this.validityDays = existing.validity_days;
+                this.notes = existing.notes;
+                this.items = existing.items.map(i => ({
+                    item_id: i.item_id,
+                    supplier_id: i.supplier_id || '',
+                    quantity: i.quantity,
+                    berat_beli_per_unit: i.berat_beli_per_unit,
+                    hpp_per_unit: i.hpp_per_unit,
+                    harga_jual_per_unit: i.harga_jual_per_unit,
+                    different_scale: i.different_scale,
+                    berat_jual_per_unit: i.berat_jual_per_unit || 0,
+                    urutan: i.urutan,
+                    notes: i.notes || '',
+                }));
+                {% endif %}
+            });
+        },
+
+        addItem() {
+            this.items.push({
+                item_id: '',
+                supplier_id: '',
+                quantity: 1,
+                berat_beli_per_unit: 0,
+                hpp_per_unit: 0,
+                harga_jual_per_unit: 0,
+                different_scale: false,
+                berat_jual_per_unit: 0,
+                urutan: this.items.length,
+                notes: '',
+            });
+        },
+
+        removeItem(index) {
+            this.items.splice(index, 1);
+        },
+
+        calcRowBeli(item) {
+            const qty = parseFloat(item.quantity) || 0;
+            const berat = parseFloat(item.berat_beli_per_unit) || 0;
+            const hpp = parseFloat(item.hpp_per_unit) || 0;
+            if (berat > 0) return qty * berat * hpp;
+            return qty * hpp;
+        },
+
+        calcRowJual(item) {
+            const qty = parseFloat(item.quantity) || 0;
+            const beratBeli = parseFloat(item.berat_beli_per_unit) || 0;
+            const hargaJual = parseFloat(item.harga_jual_per_unit) || 0;
+            const beratJual = parseFloat(item.berat_jual_per_unit) || 0;
+            const berat = (item.different_scale && beratJual > 0) ? beratJual : beratBeli;
+            if (berat > 0) return qty * berat * hargaJual;
+            return qty * hargaJual;
+        },
+
+        get totalBeli() {
+            return this.items.reduce((sum, item) => sum + this.calcRowBeli(item), 0);
+        },
+
+        get totalJual() {
+            return this.items.reduce((sum, item) => sum + this.calcRowJual(item), 0);
+        },
+
+        get ppnAmount() {
+            if (this.priceMode === 'include_ppn') {
+                return (this.totalJual / 1.11) * 0.11;
+            }
+            return this.totalJual * 0.11;
+        },
+
+        get grandTotal() {
+            if (this.priceMode === 'include_ppn') return this.totalJual;
+            return this.totalJual + this.ppnAmount;
+        },
+
+        async save() {
+            const body = {
+                customer_id: this.selectedCustomer || null,
+                supplier_mode: this.supplierMode,
+                price_mode: this.priceMode,
+                terms_of_payment: this.termsOfPayment || null,
+                terms_of_delivery: this.termsOfDelivery || null,
+                validity_days: this.validityDays || null,
+                notes: this.notes || null,
+                items: this.items.filter(i => i.item_id),
+            };
+
+            const url = this.editMode
+                ? `/api/penawaran/${this.editId}`
+                : '/api/penawaran';
+            const method = this.editMode ? 'PATCH' : 'POST';
+
+            const res = await fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                showToast('Penawaran berhasil disimpan: ' + data.nomor, 'success');
+                setTimeout(() => { window.location.href = '/app/penawaran/' + data.id; }, 1000);
+            } else {
+                const err = await res.json();
+                showToast('Gagal menyimpan: ' + (err.detail || 'Error'), 'error');
+            }
+        },
+
+        formatRp(val) {
+            return 'Rp ' + Math.round(val).toLocaleString('id-ID');
+        },
+    };
+}
+</script>
+{% endblock %}

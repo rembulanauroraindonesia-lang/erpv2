@@ -1,0 +1,144 @@
+{% extends "shared/_base.html" %}
+
+{% block title %}{{ doc.nomor }} — RAI ERP{% endblock %}
+{% block page_title %}
+<div class="flex items-center gap-3">
+    <a href="/app/penawaran" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+    </a>
+    {{ doc.nomor }}
+    {% if doc.status == 'draft' %}
+    <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-800">Draft</span>
+    {% elif doc.status == 'locked' %}
+    <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800">Locked</span>
+    {% elif doc.status == 'revised' %}
+    <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">Revised</span>
+    {% endif %}
+    <span class="text-sm text-gray-400">v{{ doc.version }}</span>
+</div>
+{% endblock %}
+
+{% block page_actions %}
+{% if doc.status == 'draft' %}
+<a href="/app/penawaran/{{ doc.id }}/edit"
+   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+    Edit
+</a>
+<button hx-post="/api/penawaran/{{ doc.id }}/lock" hx-target="body" hx-push-url="true"
+        hx-confirm="Yakin ingin mengunci penawaran ini?"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium">
+    Lock
+</button>
+{% endif %}
+{% if doc.status != 'revised' %}
+<button hx-post="/api/penawaran/{{ doc.id }}/revise" hx-target="body" hx-push-url="true"
+        hx-confirm="Buat revisi baru dari penawaran ini?"
+        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium">
+    Revisi
+</button>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header Info -->
+    <div class="bg-white rounded-lg border p-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Customer</div>
+                <div class="text-sm font-medium">{{ customer_name or '-' }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Mode Supplier</div>
+                <div class="text-sm">{{ 'Single' if doc.supplier_mode == 'single' else 'Multi' }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Mode Harga</div>
+                <div class="text-sm">{{ 'Include PPN' if doc.price_mode == 'include_ppn' else 'Exclude PPN' }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Berlaku</div>
+                <div class="text-sm">{{ doc.validity_days or '-' }} hari</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Ket. Pembayaran</div>
+                <div class="text-sm">{{ doc.terms_of_payment or '-' }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Ket. Pengiriman</div>
+                <div class="text-sm">{{ doc.terms_of_delivery or '-' }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Tanggal Dibuat</div>
+                <div class="text-sm">{{ doc.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Catatan</div>
+                <div class="text-sm">{{ doc.notes or '-' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="bg-white rounded-lg border overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 w-10">#</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Item</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Supplier</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 w-20">Qty</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 w-24">Berat Beli</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 w-28">HPP/Unit</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 w-28">Total Beli</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 w-28">Harga Jual</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 w-28">Total Jual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pi in items %}
+                    <tr class="border-b">
+                        <td class="px-4 py-3 text-gray-500">{{ pi.urutan + 1 }}</td>
+                        <td class="px-4 py-3 font-medium">{{ item_names.get(pi.item_id, pi.item_id) }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ supplier_names.get(pi.supplier_id, '-') if pi.supplier_id else '-' }}</td>
+                        <td class="px-4 py-3 text-right">{{ "{:,.2f}".format(pi.quantity) }}</td>
+                        <td class="px-4 py-3 text-right">{{ "{:,.4f}".format(pi.berat_beli_per_unit) }}</td>
+                        <td class="px-4 py-3 text-right">{{ "{:,.0f}".format(pi.hpp_per_unit) }}</td>
+                        <td class="px-4 py-3 text-right font-mono">{{ "{:,.0f}".format(pi.total_beli) }}</td>
+                        <td class="px-4 py-3 text-right">{{ "{:,.0f}".format(pi.harga_jual_per_unit) }}</td>
+                        <td class="px-4 py-3 text-right font-mono">{{ "{:,.0f}".format(pi.total_jual) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="bg-white rounded-lg border p-6">
+        <div class="flex justify-end">
+            <div class="w-full md:w-80 space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Total Beli</span>
+                    <span class="font-mono">Rp {{ "{:,.0f}".format(doc.total_beli) }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Total Jual</span>
+                    <span class="font-mono">Rp {{ "{:,.0f}".format(doc.total_jual) }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">PPN (11%)</span>
+                    <span class="font-mono">Rp {{ "{:,.0f}".format(doc.ppn_amount) }}</span>
+                </div>
+                <div class="border-t pt-3 flex justify-between font-semibold">
+                    <span>Grand Total</span>
+                    <span class="font-mono text-blue-600">Rp {{ "{:,.0f}".format(doc.grand_total) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
