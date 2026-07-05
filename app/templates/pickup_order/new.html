@@ -36,6 +36,16 @@
                        class="w-full px-3 py-2 border rounded-lg text-sm">
             </div>
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Driver</label>
+                <input type="text" x-model="driverName" placeholder="Nama Driver"
+                       class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Telp Driver</label>
+                <input type="text" x-model="driverPhone" placeholder="Telp Driver"
+                       class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">PIC Name</label>
                 <input type="text" x-model="picName" placeholder="Nama PIC"
                        class="w-full px-3 py-2 border rounded-lg text-sm">
@@ -123,6 +133,8 @@ function puBuilder() {
         selectedSupplier: '',
         pickupDate: new Date().toISOString().split('T')[0],
         vehiclePlate: '',
+        driverName: '',
+        driverPhone: '',
         picName: '',
         picPhone: '',
         pickupAddress: '',
@@ -143,6 +155,8 @@ function puBuilder() {
                 supplier_id: this.selectedSupplier || null,
                 pickup_date: this.pickupDate || null,
                 vehicle_plate: this.vehiclePlate || null,
+                driver_name: this.driverName || null,
+                driver_phone: this.driverPhone || null,
                 pic_name: this.picName || null,
                 pic_phone: this.picPhone || null,
                 pickup_address: this.pickupAddress || null,

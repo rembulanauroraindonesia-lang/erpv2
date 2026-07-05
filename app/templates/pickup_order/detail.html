@@ -79,6 +79,9 @@
             <div>PIC: <strong>{{ doc.pic_name or '-' }}</strong> ({{ doc.pic_phone or '-' }})</div>
             <div>Alamat Pickup: {{ doc.pickup_address or '-' }}</div>
         </div>
+        {% if doc.driver_name %}
+        <div>Driver: <strong>{{ doc.driver_name }}</strong> ({{ doc.driver_phone or '-' }})</div>
+        {% endif %}
         {% if doc.terms_of_payment %}
         <div>T.O.P: {{ doc.terms_of_payment }}</div>
         {% endif %}

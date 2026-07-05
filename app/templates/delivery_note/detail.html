@@ -79,6 +79,9 @@
             <div>PIC: <strong>{{ doc.pic_name or '-' }}</strong> ({{ doc.pic_phone or '-' }})</div>
             <div>Alamat Kirim: {{ doc.delivery_address or '-' }}</div>
         </div>
+        {% if doc.driver_name %}
+        <div>Driver: <strong>{{ doc.driver_name }}</strong> ({{ doc.driver_phone or '-' }})</div>
+        {% endif %}
         {% if doc.terms_of_delivery %}
         <div>Ket. Pengiriman: {{ doc.terms_of_delivery }}</div>
         {% endif %}

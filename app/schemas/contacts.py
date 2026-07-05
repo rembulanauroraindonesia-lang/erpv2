@@ -13,6 +13,8 @@ class ContactCreate(BaseModel):
     tax_info: Optional[str] = None
     contact_person: Optional[str] = None
     contact_phone: Optional[str] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
     terms_of_payment: Optional[str] = None
     terms_of_delivery: Optional[str] = None
     notes: Optional[str] = None
@@ -28,6 +30,8 @@ class ContactUpdate(BaseModel):
     tax_info: Optional[str] = None
     contact_person: Optional[str] = None
     contact_phone: Optional[str] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
     terms_of_payment: Optional[str] = None
     terms_of_delivery: Optional[str] = None
     notes: Optional[str] = None
@@ -44,6 +48,8 @@ class ContactResponse(BaseModel):
     tax_info: Optional[str] = None
     contact_person: Optional[str] = None
     contact_phone: Optional[str] = None
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
     terms_of_payment: Optional[str] = None
     terms_of_delivery: Optional[str] = None
     notes: Optional[str] = None

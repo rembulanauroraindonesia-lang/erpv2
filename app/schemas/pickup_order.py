@@ -26,6 +26,8 @@ class PickupOrderCreate(BaseModel):
     po_id: Optional[str] = None
     pickup_date: Optional[date] = None
     vehicle_plate: Optional[str] = None
+    driver_name: Optional[str] = None
+    driver_phone: Optional[str] = None
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     pickup_address: Optional[str] = None
@@ -40,6 +42,8 @@ class PickupOrderUpdate(BaseModel):
     po_id: Optional[str] = None
     pickup_date: Optional[date] = None
     vehicle_plate: Optional[str] = None
+    driver_name: Optional[str] = None
+    driver_phone: Optional[str] = None
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     pickup_address: Optional[str] = None
@@ -56,6 +60,8 @@ class PickupOrderResponse(BaseModel):
     po_id: Optional[str] = None
     pickup_date: Optional[date] = None
     vehicle_plate: Optional[str] = None
+    driver_name: Optional[str] = None
+    driver_phone: Optional[str] = None
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     pickup_address: Optional[str] = None

@@ -71,6 +71,19 @@
 
     <div class="grid grid-cols-2 gap-3">
         <div>
+            <label class="block text-sm font-medium mb-1">PIC Name</label>
+            <input type="text" name="pic_name" value="{{ contact.pic_name if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">PIC Phone (Mobile)</label>
+            <input type="text" name="pic_phone" value="{{ contact.pic_phone if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div>
             <label class="block text-sm font-medium mb-1">T.O.P (Default)</label>
             <input type="text" name="terms_of_payment" value="{{ contact.terms_of_payment if contact else '' }}"
                    class="w-full border rounded-lg px-3 py-2 text-sm">
