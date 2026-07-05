@@ -126,11 +126,9 @@ async def penawaran_detail(
     items = result.scalars().all()
 
     # Get related names
-    customer_name = None
+    customer = None
     if doc.customer_id:
-        c = await db.get(Contact, doc.customer_id)
-        if c:
-            customer_name = c.name
+        customer = await db.get(Contact, doc.customer_id)
 
     from app.models.items import Item
     item_ids = [pi.item_id for pi in items]
@@ -149,7 +147,7 @@ async def penawaran_detail(
         "request": request,
         "doc": doc,
         "items": items,
-        "customer_name": customer_name,
+        "customer": customer,
         "item_names": item_names,
         "supplier_names": supplier_names,
         "active": "penawaran",

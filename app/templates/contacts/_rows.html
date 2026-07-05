@@ -11,7 +11,7 @@
         </span>
     </td>
     <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ c.name }}</td>
-    <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ c.email or '-' }}</td>
+    <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ c.npwp or '-' }}</td>
     <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ c.phone or '-' }}</td>
     <td class="px-4 py-3">
         <button hx-get="/app/kontak/{{ c.id }}/form" hx-target="#modal-content" hx-swap="innerHTML"

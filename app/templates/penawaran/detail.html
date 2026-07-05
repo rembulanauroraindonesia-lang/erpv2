@@ -27,18 +27,22 @@
     Edit
 </a>
 <button hx-post="/api/penawaran/{{ doc.id }}/lock" hx-target="body" hx-push-url="true"
-        hx-confirm="Yakin ingin mengunci penawaran ini?"
-        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium">
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+        onclick="return confirm('Yakin ingin mengunci penawaran ini?')">
     Lock
 </button>
 {% endif %}
 {% if doc.status != 'revised' %}
 <button hx-post="/api/penawaran/{{ doc.id }}/revise" hx-target="body" hx-push-url="true"
-        hx-confirm="Buat revisi baru dari penawaran ini?"
-        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium">
+        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium"
+        onclick="return confirm('Buat revisi baru dari penawaran ini?')">
     Revisi
 </button>
 {% endif %}
+<a href="/api/pdf/penawaran/{{ doc.id }}" target="_blank"
+   class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium">
+    Cetak
+</a>
 {% endblock %}
 
 {% block content %}
@@ -48,36 +52,60 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div>
                 <div class="text-xs text-gray-500 uppercase mb-1">Customer</div>
-                <div class="text-sm font-medium">{{ customer_name or '-' }}</div>
+                <div class="text-sm font-medium">{{ customer.name if customer else '-' }}</div>
             </div>
+            {% if customer and customer.npwp %}
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">NPWP</div>
+                <div class="text-sm">{{ customer.npwp }}</div>
+            </div>
+            {% endif %}
+            {% if customer and customer.phone %}
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Telepon</div>
+                <div class="text-sm">{{ customer.phone }}</div>
+            </div>
+            {% endif %}
             <div>
                 <div class="text-xs text-gray-500 uppercase mb-1">Mode Supplier</div>
                 <div class="text-sm">{{ 'Single' if doc.supplier_mode == 'single' else 'Multi' }}</div>
             </div>
             <div>
                 <div class="text-xs text-gray-500 uppercase mb-1">Mode Harga</div>
-                <div class="text-sm">{{ 'Include PPN' if doc.price_mode == 'include_ppn' else 'Exclude PPN' }}</div>
+                <div class="text-sm">{{ 'Include PPN 11%' if doc.price_mode == 'include_ppn' else 'Exclude PPN 11%' }}</div>
             </div>
             <div>
                 <div class="text-xs text-gray-500 uppercase mb-1">Berlaku</div>
                 <div class="text-sm">{{ doc.validity_days or '-' }} hari</div>
             </div>
             <div>
-                <div class="text-xs text-gray-500 uppercase mb-1">Ket. Pembayaran</div>
-                <div class="text-sm">{{ doc.terms_of_payment or '-' }}</div>
-            </div>
-            <div>
-                <div class="text-xs text-gray-500 uppercase mb-1">Ket. Pengiriman</div>
-                <div class="text-sm">{{ doc.terms_of_delivery or '-' }}</div>
-            </div>
-            <div>
                 <div class="text-xs text-gray-500 uppercase mb-1">Tanggal Dibuat</div>
                 <div class="text-sm">{{ doc.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
             </div>
-            <div>
-                <div class="text-xs text-gray-500 uppercase mb-1">Catatan</div>
-                <div class="text-sm">{{ doc.notes or '-' }}</div>
+            {% if customer and customer.address %}
+            <div class="col-span-2">
+                <div class="text-xs text-gray-500 uppercase mb-1">Alamat Customer</div>
+                <div class="text-sm">{{ customer.address }}</div>
             </div>
+            {% endif %}
+            {% if doc.terms_of_payment %}
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Ket. Pembayaran</div>
+                <div class="text-sm">{{ doc.terms_of_payment }}</div>
+            </div>
+            {% endif %}
+            {% if doc.terms_of_delivery %}
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Ket. Pengiriman</div>
+                <div class="text-sm">{{ doc.terms_of_delivery }}</div>
+            </div>
+            {% endif %}
+            {% if doc.notes %}
+            <div class="col-span-2">
+                <div class="text-xs text-gray-500 uppercase mb-1">Catatan</div>
+                <div class="text-sm">{{ doc.notes }}</div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -89,7 +117,9 @@
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 w-10">#</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Item</th>
+                        {% if doc.supplier_mode == 'multi' %}
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Supplier</th>
+                        {% endif %}
                         <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 w-20">Qty</th>
                         <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 w-24">Berat Beli</th>
                         <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 w-28">HPP/Unit</th>
@@ -103,7 +133,9 @@
                     <tr class="border-b">
                         <td class="px-4 py-3 text-gray-500">{{ pi.urutan + 1 }}</td>
                         <td class="px-4 py-3 font-medium">{{ item_names.get(pi.item_id, pi.item_id) }}</td>
+                        {% if doc.supplier_mode == 'multi' %}
                         <td class="px-4 py-3 text-gray-500">{{ supplier_names.get(pi.supplier_id, '-') if pi.supplier_id else '-' }}</td>
+                        {% endif %}
                         <td class="px-4 py-3 text-right">{{ "{:,.2f}".format(pi.quantity) }}</td>
                         <td class="px-4 py-3 text-right">{{ "{:,.4f}".format(pi.berat_beli_per_unit) }}</td>
                         <td class="px-4 py-3 text-right">{{ "{:,.0f}".format(pi.hpp_per_unit) }}</td>
@@ -128,6 +160,10 @@
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">Total Jual</span>
                     <span class="font-mono">Rp {{ "{:,.0f}".format(doc.total_jual) }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Margin</span>
+                    <span class="font-mono">Rp {{ "{:,.0f}".format(doc.total_jual - doc.total_beli) }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">PPN (11%)</span>

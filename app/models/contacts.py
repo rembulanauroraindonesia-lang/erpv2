@@ -13,6 +13,7 @@ class Contact(TimestampMixin, SoftDeleteMixin, Base):
     address = Column(Text, nullable=True)
     npwp = Column(String(50), nullable=True)
     tax_info = Column(Text, nullable=True)
+    contact_person = Column(String(100), nullable=True)
     notes = Column(Text, nullable=True)
 
 

@@ -11,6 +11,7 @@ class ContactCreate(BaseModel):
     address: Optional[str] = None
     npwp: Optional[str] = None
     tax_info: Optional[str] = None
+    contact_person: Optional[str] = None
     notes: Optional[str] = None
 
 
@@ -22,6 +23,7 @@ class ContactUpdate(BaseModel):
     address: Optional[str] = None
     npwp: Optional[str] = None
     tax_info: Optional[str] = None
+    contact_person: Optional[str] = None
     notes: Optional[str] = None
 
 
@@ -34,6 +36,7 @@ class ContactResponse(BaseModel):
     address: Optional[str] = None
     npwp: Optional[str] = None
     tax_info: Optional[str] = None
+    contact_person: Optional[str] = None
     notes: Optional[str] = None
     created_at: datetime
     updated_at: datetime

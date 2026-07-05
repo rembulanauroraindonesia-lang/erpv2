@@ -9,46 +9,69 @@
             margin: 2cm;
         }
         body {
-            font-family: sans-serif;
+            font-family: 'Inter', sans-serif;
             font-size: 11px;
             color: #333;
             margin: 0;
             padding: 0;
         }
         .header {
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 2px solid #1e40af;
+            padding-bottom: 12px;
             margin-bottom: 20px;
         }
-        .header h1 {
-            font-size: 18px;
-            margin: 0 0 4px 0;
-            text-transform: uppercase;
+        .header img {
+            height: 4rem;
         }
-        .header p {
-            margin: 2px 0;
+        .header .company-info h1 {
+            font-size: 18px;
+            margin: 0 0 2px 0;
+            color: #1e40af;
+        }
+        .header .company-info p {
+            margin: 1px 0;
             font-size: 10px;
+            color: #555;
+        }
+        .header .company-info .npwp {
+            font-size: 9px;
+            color: #888;
         }
         .title {
             text-align: center;
             margin: 20px 0;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             text-transform: uppercase;
-            text-decoration: underline;
+            letter-spacing: 2px;
         }
-        .meta-table {
+        .title span {
+            border-bottom: 2px solid #1e40af;
+            padding-bottom: 4px;
+        }
+        .doc-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .doc-meta .column {
+            width: 48%;
+        }
+        .doc-meta table {
             width: 100%;
-            margin-bottom: 15px;
         }
-        .meta-table td {
-            border: none;
+        .doc-meta td {
             padding: 2px 4px;
             vertical-align: top;
+            font-size: 10px;
         }
-        .meta-table .label {
-            width: 120px;
+        .doc-meta .label {
             font-weight: bold;
+            width: 80px;
+            white-space: nowrap;
         }
         table.items {
             width: 100%;
@@ -57,98 +80,158 @@
         }
         table.items th,
         table.items td {
-            border: 1px solid #ddd;
+            border: 1px solid #d1d5db;
             padding: 6px 8px;
-            text-align: left;
+            font-size: 10px;
         }
         table.items th {
-            background: #f5f5f5;
-            font-weight: bold;
-            font-size: 10px;
+            background: #f3f4f6;
+            font-weight: 600;
             text-transform: uppercase;
+            text-align: center;
         }
-        table.items td.num {
-            text-align: right;
-        }
+        table.items td.left { text-align: left; }
+        table.items td.center { text-align: center; }
+        table.items td.right { text-align: right; }
         .summary {
-            width: 300px;
-            float: right;
+            width: 320px;
+            margin-left: auto;
             border-collapse: collapse;
         }
         .summary td {
-            border: none;
-            padding: 3px 8px;
+            padding: 4px 8px;
+            font-size: 10px;
         }
+        .summary td.label { text-align: left; }
+        .summary td.value { text-align: right; font-weight: 500; }
         .summary .total-row td {
             border-top: 2px solid #333;
             font-weight: bold;
             font-size: 12px;
+            padding-top: 6px;
         }
         .notes {
-            clear: both;
-            margin-top: 30px;
+            margin-top: 24px;
             padding-top: 10px;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid #d1d5db;
             font-size: 10px;
+            line-height: 1.6;
         }
         .footer {
-            margin-top: 40px;
-            text-align: right;
+            margin-top: 50px;
         }
-        .footer .signature {
-            margin-top: 60px;
-            border-top: 1px solid #333;
+        .footer .sign-box {
+            text-align: right;
+            margin-top: 15px;
+        }
+        .footer .sign-line {
             display: inline-block;
+            margin-top: 50px;
+            border-top: 1px solid #333;
             padding-top: 4px;
-            min-width: 200px;
+            min-width: 220px;
             text-align: center;
+            font-size: 10px;
         }
     </style>
 </head>
 <body>
+    <!-- Header: logo LEFT of company info -->
     <div class="header">
-        <h1>{{ company.get('company_name', 'PT. RAI') }}</h1>
-        <p>{{ company.get('company_address', '') }}</p>
-        <p>Telp: {{ company.get('company_phone', '') }}</p>
+        <img src="{{ company.get('logo_path', '') }}" alt="Logo" onerror="this.style.display='none'">
+        <div class="company-info">
+            <h1>{{ company.get('company_name', 'PT Rembulan Aurora Indonesia') }}</h1>
+            <p>{{ company.get('company_address', '') }}</p>
+            <p>Telp: {{ company.get('company_phone', '') }} | Email: {{ company.get('company_email', '') }}</p>
+            {% if company.get('company_npwp') %}
+            <p class="npwp">NPWP: {{ company.get('company_npwp') }}</p>
+            {% endif %}
+        </div>
     </div>
 
-    <div class="title">Surat Penawaran</div>
+    <div class="title"><span>SURAT PENAWARAN</span></div>
 
-    <table class="meta-table">
-        <tr>
-            <td class="label">Nomor</td>
-            <td>: {{ doc.nomor }}</td>
-        </tr>
-        <tr>
-            <td class="label">Tanggal</td>
-            <td>: {{ format_date(doc.created_at) }}</td>
-        </tr>
-        {% if doc.customer_id %}
-        <tr>
-            <td class="label">Kepada</td>
-            <td>: {{ doc.customer_id }}</td>
-        </tr>
-        {% endif %}
-    </table>
+    <div class="doc-meta">
+        <div class="column">
+            <table>
+                <tr>
+                    <td class="label">Nomor</td>
+                    <td>: {{ doc.nomor }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Tanggal</td>
+                    <td>: {{ format_date(doc.created_at) }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Berlaku</td>
+                    <td>: {{ doc.validity_days or '-' }} hari</td>
+                </tr>
+                <tr>
+                    <td class="label">Mode Harga</td>
+                    <td>: {{ 'Include PPN 11%' if doc.price_mode == 'include_ppn' else 'Exclude PPN 11%' }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="column">
+            {% if customer %}
+            <table>
+                <tr>
+                    <td class="label">Kepada</td>
+                    <td>: {{ customer.name }}</td>
+                </tr>
+                {% if customer.address %}
+                <tr>
+                    <td class="label">Alamat</td>
+                    <td>: {{ customer.address }}</td>
+                </tr>
+                {% endif %}
+                {% if customer.npwp %}
+                <tr>
+                    <td class="label">NPWP</td>
+                    <td>: {{ customer.npwp }}</td>
+                </tr>
+                {% endif %}
+                {% if customer.phone %}
+                <tr>
+                    <td class="label">Telp</td>
+                    <td>: {{ customer.phone }}</td>
+                </tr>
+                {% endif %}
+                {% if customer.email %}
+                <tr>
+                    <td class="label">Email</td>
+                    <td>: {{ customer.email }}</td>
+                </tr>
+                {% endif %}
+            </table>
+            {% endif %}
+        </div>
+    </div>
 
     <table class="items">
         <thead>
             <tr>
-                <th style="width: 30px;">No</th>
-                <th>Item</th>
-                <th style="width: 60px; text-align: right;">Qty</th>
-                <th style="width: 120px; text-align: right;">Harga Satuan</th>
-                <th style="width: 120px; text-align: right;">Total</th>
+                <th style="width: 28px;">No</th>
+                <th>Item / Deskripsi</th>
+                {% if doc.supplier_mode == 'multi' %}<th style="width: 100px;">Supplier</th>{% endif %}
+                <th style="width: 55px;">Qty</th>
+                <th style="width: 100px;">Harga Satuan</th>
+                <th style="width: 110px;">Total</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in items %}
+            {% for pi in items %}
+            {% set item_obj = item_map.get(pi.item_id) %}
             <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ item.item_id }}</td>
-                <td class="num">{{ "%.2f"|format(item.quantity) }}</td>
-                <td class="num">{{ format_rupiah(item.harga_jual_per_unit) }}</td>
-                <td class="num">{{ format_rupiah(item.total_jual) }}</td>
+                <td class="center">{{ loop.index }}</td>
+                <td class="left">{{ item_obj.name if item_obj else pi.item_id }}</td>
+                {% if doc.supplier_mode == 'multi' %}
+                {% set supp_obj = supplier_map.get(pi.supplier_id) %}
+                <td class="left">{{ supp_obj.name if supp_obj else '-' }}</td>
+                {% endif %}
+                <td class="center">{{ "%.2f"|format(pi.quantity) }}</td>
+                <td class="right">{{ format_rupiah(pi.harga_jual_per_unit) }}</td>
+                <td class="right">{{ format_rupiah(pi.total_jual) }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -156,50 +239,38 @@
 
     <table class="summary">
         <tr>
-            <td>Subtotal</td>
-            <td style="text-align: right;">{{ format_rupiah(doc.total_jual) }}</td>
+            <td class="label">Total Jual</td>
+            <td class="value">{{ format_rupiah(doc.total_jual) }}</td>
         </tr>
         <tr>
-            <td>PPN</td>
-            <td style="text-align: right;">{{ format_rupiah(doc.ppn_amount) }}</td>
+            <td class="label">PPN 11%</td>
+            <td class="value">{{ format_rupiah(doc.ppn_amount) }}</td>
         </tr>
         <tr class="total-row">
-            <td>Grand Total</td>
-            <td style="text-align: right;">{{ format_rupiah(doc.grand_total) }}</td>
+            <td class="label">Grand Total</td>
+            <td class="value">{{ format_rupiah(doc.grand_total) }}</td>
         </tr>
     </table>
 
-    {% if doc.notes %}
+    {% if doc.terms_of_payment or doc.terms_of_delivery or doc.notes %}
     <div class="notes">
-        <strong>Catatan:</strong><br>
-        {{ doc.notes }}
-    </div>
-    {% endif %}
-
-    {% if doc.terms_of_payment %}
-    <div class="notes">
-        <strong>Syarat Pembayaran:</strong><br>
-        {{ doc.terms_of_payment }}
-    </div>
-    {% endif %}
-
-    {% if doc.terms_of_delivery %}
-    <div class="notes">
-        <strong>Syarat Pengiriman:</strong><br>
-        {{ doc.terms_of_delivery }}
-    </div>
-    {% endif %}
-
-    {% if doc.validity_days %}
-    <div class="notes">
-        <strong>Masa Berlaku:</strong> {{ doc.validity_days }} hari sejak tanggal penawaran
+        {% if doc.terms_of_payment %}
+        <p><strong>Syarat Pembayaran:</strong> {{ doc.terms_of_payment }}</p>
+        {% endif %}
+        {% if doc.terms_of_delivery %}
+        <p><strong>Syarat Pengiriman:</strong> {{ doc.terms_of_delivery }}</p>
+        {% endif %}
+        {% if doc.notes %}
+        <p><strong>Catatan:</strong> {{ doc.notes }}</p>
+        {% endif %}
     </div>
     {% endif %}
 
     <div class="footer">
-        <p>Hormat Kami,</p>
-        <div class="signature">
-            {{ company.get('company_name', 'PT. RAI') }}
+        <div class="sign-box">
+            <p>{{ company.get('company_city', 'Jakarta') }}, {{ format_date(doc.created_at) }}</p>
+            <p>Hormat Kami,</p>
+            <div class="sign-line">{{ company.get('company_name', 'PT Rembulan Aurora Indonesia') }}</div>
         </div>
     </div>
 </body>

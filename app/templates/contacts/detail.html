@@ -50,6 +50,18 @@
                 <div class="text-xs text-gray-500 uppercase mb-1">NPWP</div>
                 <div class="text-sm">{{ contact.npwp or '-' }}</div>
             </div>
+            {% if contact.tax_info %}
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Info Pajak</div>
+                <div class="text-sm">{{ contact.tax_info }}</div>
+            </div>
+            {% endif %}
+            {% if contact.contact_person %}
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Kontak Person</div>
+                <div class="text-sm">{{ contact.contact_person }}</div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

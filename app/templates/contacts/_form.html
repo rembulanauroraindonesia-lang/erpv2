@@ -50,6 +50,19 @@
                    class="w-full border rounded-lg px-3 py-2 text-sm">
         </div>
         <div>
+            <label class="block text-sm font-medium mb-1">Info Pajak</label>
+            <input type="text" name="tax_info" value="{{ contact.tax_info if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div>
+            <label class="block text-sm font-medium mb-1">Kontak Person</label>
+            <input type="text" name="contact_person" value="{{ contact.contact_person if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
             <label class="block text-sm font-medium mb-1">Catatan</label>
             <input type="text" name="notes" value="{{ contact.notes if contact else '' }}"
                    class="w-full border rounded-lg px-3 py-2 text-sm">
