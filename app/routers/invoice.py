@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.invoice import Invoice, InvoiceItem
+from app.models.system import ActivityLog
 from app.schemas.invoice import (
     InvoiceCreate, InvoiceUpdate,
     InvoiceResponse, InvoiceDetailResponse, InvItemResponse,
@@ -83,6 +84,7 @@ async def create_invoice(body: InvoiceCreate, db: AsyncSession = Depends(get_db)
         due_date=body.due_date,
         terms_of_payment=body.terms_of_payment,
         notes=body.notes,
+        bukti_bayar_file=body.bukti_bayar_file,
     )
     db.add(doc); await db.flush()
 
@@ -94,6 +96,10 @@ async def create_invoice(body: InvoiceCreate, db: AsyncSession = Depends(get_db)
             total=Decimal(str(it.quantity)) * Decimal(str(it.unit_price)),
             urutan=it.urutan if it.urutan else i, notes=it.notes,
         ))
+    await db.flush()
+
+    db.add(ActivityLog(entity_type="invoice", entity_id=doc.id, action="create",
+                       description=f"Created Invoice {doc.nomor}"))
     await db.flush()
 
     items = (await db.execute(
@@ -135,6 +141,10 @@ async def update_invoice(doc_id: str, body: InvoiceUpdate, db: AsyncSession = De
             ))
     await db.flush()
 
+    db.add(ActivityLog(entity_type="invoice", entity_id=doc_id, action="update",
+                       description=f"Updated Invoice {doc.nomor}"))
+    await db.flush()
+
     items = (await db.execute(
         select(InvoiceItem).where(InvoiceItem.invoice_id == doc_id).order_by(InvoiceItem.urutan)
     )).scalars().all()
@@ -147,8 +157,31 @@ async def update_invoice(doc_id: str, body: InvoiceUpdate, db: AsyncSession = De
 async def delete_invoice(doc_id: str, db: AsyncSession = Depends(get_db)):
     doc = await db.get(Invoice, doc_id)
     if not doc or doc.is_deleted: raise HTTPException(404, "Not found")
-    doc.is_deleted = True; await db.flush()
+    doc.is_deleted = True
+    db.add(ActivityLog(entity_type="invoice", entity_id=doc_id, action="delete",
+                       description=f"Deleted Invoice {doc.nomor}"))
+    await db.flush()
     return {"ok": True}
+
+
+@router.post("/{doc_id}/status")
+async def status_invoice(doc_id: str, body: dict, db: AsyncSession = Depends(get_db)):
+    doc = await db.get(Invoice, doc_id)
+    if not doc or doc.is_deleted:
+        raise HTTPException(404, "Invoice not found")
+    new_status = body.get("status")
+    allowed = {
+        "draft": ["locked"],
+        "locked": ["paid", "bad_debt", "cancelled", "revised", "obsolete"],
+    }
+    if new_status not in allowed.get(doc.status, []):
+        raise HTTPException(400, f"Invalid transition from {doc.status} to {new_status}")
+    old_status = doc.status
+    doc.status = new_status
+    db.add(ActivityLog(entity_type="invoice", entity_id=doc_id, action="status_change",
+                       description=f"Invoice {doc.nomor}: {old_status} → {new_status}"))
+    await db.flush()
+    return InvoiceResponse.model_validate(doc)
 
 
 @router.post("/{doc_id}/revise")
@@ -156,4 +189,7 @@ async def revise_invoice(doc_id: str, db: AsyncSession = Depends(get_db)):
     doc = await db.get(Invoice, doc_id)
     if not doc or doc.is_deleted: raise HTTPException(404, "Not found")
     new_doc = await create_revision(db, Invoice, InvoiceItem, doc_id, "invoice_id")
+    db.add(ActivityLog(entity_type="invoice", entity_id=doc_id, action="revise",
+                       description=f"Revised Invoice {doc.nomor} → {new_doc.nomor} v{new_doc.version}"))
+    await db.flush()
     return InvoiceResponse.model_validate(new_doc)

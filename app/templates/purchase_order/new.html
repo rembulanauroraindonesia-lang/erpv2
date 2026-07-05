@@ -61,6 +61,13 @@
         </div>
     </div>
 
+    <!-- Upload Bukti PO -->
+    <div class="bg-white rounded-lg border p-6 mb-6">
+        {% with module='po', entity_id='new', field='bukti_po', label='Bukti PO (PDF/Image)', existing_file=none %}
+            {% include "shared/_upload.html" %}
+        {% endwith %}
+    </div>
+
     <!-- Items Table -->
     <div class="bg-white rounded-lg border mb-6 overflow-x-auto">
         <table class="w-full text-sm">
@@ -154,6 +161,8 @@ function poBuilder() {
         },
 
         async save() {
+            const buktiPoEl = document.getElementById('upload_bukti_po_path');
+            const bukti_po_file = buktiPoEl ? buktiPoEl.value : null;
             const body = {
                 supplier_id: this.selectedSupplier || null,
                 order_date: this.orderDate || null,
@@ -163,6 +172,7 @@ function poBuilder() {
                 pic_name: this.picName || null,
                 pic_phone: this.picPhone || null,
                 notes: this.notes || null,
+                bukti_po_file: bukti_po_file || null,
                 items: this.items.filter(i => i.item_id),
             };
 

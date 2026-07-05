@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class InvItemData(BaseModel):
+class PIItemData(BaseModel):
     item_id: Optional[str] = None
     description: Optional[str] = None
     quantity: Decimal
@@ -13,9 +13,9 @@ class InvItemData(BaseModel):
     notes: Optional[str] = None
 
 
-class InvItemResponse(BaseModel):
+class PIItemResponse(BaseModel):
     id: str
-    invoice_id: str
+    proforma_invoice_id: str
     item_id: Optional[str] = None
     description: Optional[str] = None
     quantity: Decimal
@@ -26,62 +26,58 @@ class InvItemResponse(BaseModel):
     class Config: from_attributes = True
 
 
-class InvoiceCreate(BaseModel):
+class ProformaInvoiceCreate(BaseModel):
     customer_id: Optional[str] = None
     sales_order_id: Optional[str] = None
-    delivery_note_id: Optional[str] = None
-    invoice_date: Optional[date] = None
     due_date: Optional[date] = None
+    payment_method: Optional[str] = None
     terms_of_payment: Optional[str] = None
     terms_of_delivery: Optional[str] = None
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     notes: Optional[str] = None
-    bukti_bayar_file: Optional[str] = None
-    items: list[InvItemData] = []
-    include_ppn: bool = True  # True = harga exclude PPN
+    items: list[PIItemData] = []
+    include_ppn: bool = True
 
 
-class InvoiceUpdate(BaseModel):
+class ProformaInvoiceUpdate(BaseModel):
     customer_id: Optional[str] = None
     sales_order_id: Optional[str] = None
-    delivery_note_id: Optional[str] = None
-    invoice_date: Optional[date] = None
     due_date: Optional[date] = None
+    payment_method: Optional[str] = None
     terms_of_payment: Optional[str] = None
     terms_of_delivery: Optional[str] = None
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     notes: Optional[str] = None
-    bukti_bayar_file: Optional[str] = None
-    items: Optional[list[InvItemData]] = None
+    items: Optional[list[PIItemData]] = None
 
 
-class InvoiceResponse(BaseModel):
+class ProformaInvoiceResponse(BaseModel):
     id: str
     nomor: str
     customer_id: Optional[str] = None
     sales_order_id: Optional[str] = None
-    delivery_note_id: Optional[str] = None
     status: str
-    total: Decimal
+    subtotal: Decimal
     ppn_amount: Decimal
-    grand_total: Decimal
-    invoice_date: Optional[date] = None
+    total: Decimal
     due_date: Optional[date] = None
-    terms_of_payment: Optional[str] = None
-    terms_of_delivery: Optional[str] = None
-    pic_name: Optional[str] = None
-    pic_phone: Optional[str] = None
-    notes: Optional[str] = None
+    payment_method: Optional[str] = None
     bukti_bayar_file: Optional[str] = None
+    bukti_giro_cek_file: Optional[str] = None
+    notes: Optional[str] = None
     version: int
     parent_id: Optional[str] = None
     is_current: bool
+    pic_name: Optional[str] = None
+    pic_phone: Optional[str] = None
+    terms_of_payment: Optional[str] = None
+    terms_of_delivery: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     class Config: from_attributes = True
 
 
-class InvoiceDetailResponse(InvoiceResponse):
-    items: list[InvItemResponse] = []
+class ProformaInvoiceDetailResponse(ProformaInvoiceResponse):
+    items: list[PIItemResponse] = []

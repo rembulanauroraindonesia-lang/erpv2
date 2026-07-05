@@ -1,12 +1,55 @@
-{# Reusable upload component. Pass: module, entity_id, field, accept, label #}
+{# Reusable upload component with drag & drop, preview, replace.
+   Required: module, entity_id, field.
+   Optional: label, accept, existing_file #}
 <div x-data="{
     uploading: false,
+    dragOver: false,
     files: [],
-    async uploadFile(input) {
-        if (!input.files.length) return;
+    existingFile: {{ existing_file|default('null')|tojson }},
+    init() {
+        if (this.existingFile) {
+            this.files.push(this.existingFile);
+        }
+    },
+    get previewUrl() {
+        if (!this.files.length) return null;
+        const f = this.files[0];
+        return '/data/' + f.path;
+    },
+    get isImage() {
+        if (!this.files.length) return false;
+        const f = this.files[0];
+        const ext = (f.filename || '').split('.').pop().toLowerCase();
+        return ['jpg','jpeg','png','webp'].includes(ext);
+    },
+    get isPdf() {
+        if (!this.files.length) return false;
+        const f = this.files[0];
+        return (f.filename || '').toLowerCase().endsWith('.pdf');
+    },
+    handleDrop(e) {
+        this.dragOver = false;
+        const files = e.dataTransfer.files;
+        if (files.length) this.processFile(files[0]);
+    },
+    handleInput(e) {
+        if (e.target.files.length) this.processFile(e.target.files[0]);
+        e.target.value = '';
+    },
+    async processFile(file) {
+        const ext = '.' + (file.name.split('.').pop() || '').toLowerCase();
+        const allowed = {{ accept_exts|default('[\".pdf\",\".jpg\",\".jpeg\",\".png\",\".webp\"]')|tojson }};
+        if (!allowed.includes(ext)) {
+            showToast('Tipe file tidak diizinkan: ' + ext, 'error');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('File terlalu besar (maks 5MB)', 'error');
+            return;
+        }
         this.uploading = true;
         const fd = new FormData();
-        fd.append('file', input.files[0]);
+        fd.append('file', file);
         fd.append('module', '{{ module }}');
         fd.append('entity_id', '{{ entity_id }}');
         fd.append('field', '{{ field }}');
@@ -14,7 +57,11 @@
             const res = await fetch('/api/uploads', { method: 'POST', body: fd });
             if (res.ok) {
                 const data = await res.json();
-                this.files.push(data);
+                // Delete old file if replacing
+                if (this.files.length) {
+                    await fetch('/api/uploads/' + this.files[0].path, { method: 'DELETE' });
+                }
+                this.files = [data];
                 showToast('File berhasil diupload', 'success');
             } else {
                 const err = await res.json();
@@ -24,30 +71,98 @@
             showToast('Upload gagal', 'error');
         }
         this.uploading = false;
-        input.value = '';
     },
-    async deleteFile(path) {
+    async deleteFile() {
         if (!confirm('Hapus file ini?')) return;
-        const res = await fetch('/api/uploads/' + path, { method: 'DELETE' });
+        const f = this.files[0];
+        const res = await fetch('/api/uploads/' + f.path, { method: 'DELETE' });
         if (res.ok) {
-            this.files = this.files.filter(f => f.path !== path);
+            this.files = [];
             showToast('File dihapus', 'success');
         }
-    }
-}">
-    <label class="block text-sm font-medium mb-1">{{ label | default('Upload File') }}</label>
-    <div class="border-2 border-dashed rounded-lg p-4 text-center">
-        <input type="file" accept="{{ accept | default('.pdf,.jpg,.jpeg,.png,.webp') }}"
-               @change="uploadFile($event.target)"
-               class="text-sm" :disabled="uploading">
-        <p x-show="uploading" class="text-xs text-gray-500 mt-1">Mengupload...</p>
+    },
+    get hasFile() { return this.files.length > 0; },
+    get filePath() { return this.files.length ? this.files[0].path : ''; }
+}" class="space-y-2">
+    <!-- Hidden input for form integration -->
+    <input type="hidden" name="upload_{{ field }}" x-model="filePath" id="upload_{{ field }}_path">
+    <label class="block text-sm font-medium text-gray-700">{{ label | default('Upload File') }}</label>
+
+    <!-- Drop zone -->
+    <div x-show="!hasFile && !uploading"
+         @dragover.prevent="dragOver = true"
+         @dragleave.prevent="dragOver = false"
+         @drop.prevent="handleDrop($event)"
+         :class="dragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300'"
+         class="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition"
+         @click="$refs.fileInput.click()">
+        <svg class="mx-auto h-10 w-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        <p class="text-sm text-gray-600">
+            <span class="font-medium text-blue-600">Klik untuk upload</span> atau drag & drop
+        </p>
+        <p class="text-xs text-gray-400 mt-1">PDF, JPG, PNG, WebP — maks 5MB</p>
+        <input type="file" x-ref="fileInput"
+               accept="{{ accept | default('.pdf,.jpg,.jpeg,.png,.webp') }}"
+               @change="handleInput($event)" class="hidden">
     </div>
-    <div class="mt-2 space-y-1">
-        <template x-for="file in files" :key="file.path">
-            <div class="flex items-center justify-between bg-gray-50 rounded px-3 py-2 text-sm">
-                <span x-text="file.filename" class="truncate"></span>
-                <button @click="deleteFile(file.path)" class="text-red-500 hover:text-red-700 ml-2">&times;</button>
+
+    <!-- Uploading state -->
+    <div x-show="uploading" class="border-2 border-blue-200 rounded-lg p-6 text-center">
+        <svg class="animate-spin mx-auto h-8 w-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <p class="text-sm text-gray-500">Mengupload...</p>
+    </div>
+
+    <!-- File preview card -->
+    <div x-show="hasFile" class="border rounded-lg p-3 bg-white">
+        <div class="flex items-start gap-3">
+            <!-- Thumbnail -->
+            <div class="flex-shrink-0 w-16 h-16 rounded border overflow-hidden bg-gray-100 flex items-center justify-center">
+                <template x-if="isImage">
+                    <img :src="previewUrl" class="w-full h-full object-cover" alt="preview">
+                </template>
+                <template x-if="isPdf">
+                    <div class="text-center">
+                        <svg class="w-8 h-8 text-red-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"/>
+                            <path d="M9 8a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1zm0 3a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z"/>
+                        </svg>
+                        <span class="text-[8px] text-red-600 font-bold">PDF</span>
+                    </div>
+                </template>
+                <template x-if="!isImage && !isPdf">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </template>
             </div>
-        </template>
+            <!-- File info -->
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate" x-text="files[0].filename"></p>
+                <p class="text-xs text-gray-500" x-text="formatSize(files[0].size)"></p>
+            </div>
+            <!-- Replace + Delete buttons -->
+            <div class="flex items-center gap-1 flex-shrink-0">
+                <button @click="$refs.fileInput.click()"
+                        class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition"
+                        title="Ganti file">[G]</button>
+                <button @click="deleteFile()"
+                        class="px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition"
+                        title="Hapus file">&times;</button>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+function formatSize(bytes) {
+    if (!bytes) return '';
+    const mb = bytes / (1024 * 1024);
+    if (mb >= 1) return mb.toFixed(1) + ' MB';
+    return Math.round(bytes / 1024) + ' KB';
+}
+</script>

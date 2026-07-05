@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.purchase_order import PurchaseOrder, PurchaseOrderItem
+from app.models.system import ActivityLog
 from app.schemas.purchase_order import (
     PurchaseOrderCreate, PurchaseOrderUpdate,
     PurchaseOrderResponse, PurchaseOrderDetailResponse, POItemResponse,
@@ -68,6 +69,7 @@ async def create_po(body: PurchaseOrderCreate, db: AsyncSession = Depends(get_db
         terms_of_payment=body.terms_of_payment, terms_of_delivery=body.terms_of_delivery,
         order_date=body.order_date or date.today(), expected_date=body.expected_date,
         notes=body.notes, total=total,
+        bukti_po_file=body.bukti_po_file,
     )
     db.add(doc); await db.flush()
 
@@ -78,6 +80,10 @@ async def create_po(body: PurchaseOrderCreate, db: AsyncSession = Depends(get_db
             total=Decimal(str(it.quantity)) * Decimal(str(it.unit_price)),
             urutan=it.urutan if it.urutan else i, notes=it.notes,
         ))
+    await db.flush()
+
+    db.add(ActivityLog(entity_type="purchase_order", entity_id=doc.id, action="create",
+                       description=f"Created Purchase Order {doc.nomor}"))
     await db.flush()
 
     items = (await db.execute(
@@ -110,6 +116,10 @@ async def update_po(doc_id: str, body: PurchaseOrderUpdate, db: AsyncSession = D
             ))
     await db.flush()
 
+    db.add(ActivityLog(entity_type="purchase_order", entity_id=doc_id, action="update",
+                       description=f"Updated Purchase Order {doc.nomor}"))
+    await db.flush()
+
     items = (await db.execute(
         select(PurchaseOrderItem).where(PurchaseOrderItem.purchase_order_id == doc_id).order_by(PurchaseOrderItem.urutan)
     )).scalars().all()
@@ -122,8 +132,32 @@ async def update_po(doc_id: str, body: PurchaseOrderUpdate, db: AsyncSession = D
 async def delete_po(doc_id: str, db: AsyncSession = Depends(get_db)):
     doc = await db.get(PurchaseOrder, doc_id)
     if not doc or doc.is_deleted: raise HTTPException(404, "Not found")
-    doc.is_deleted = True; await db.flush()
+    doc.is_deleted = True
+    db.add(ActivityLog(entity_type="purchase_order", entity_id=doc_id, action="delete",
+                       description=f"Deleted Purchase Order {doc.nomor}"))
+    await db.flush()
     return {"ok": True}
+
+
+@router.post("/{doc_id}/status")
+async def status_po(doc_id: str, body: dict, db: AsyncSession = Depends(get_db)):
+    doc = await db.get(PurchaseOrder, doc_id)
+    if not doc or doc.is_deleted:
+        raise HTTPException(404, "Purchase Order not found")
+    new_status = body.get("status")
+    allowed = {
+        "draft": ["sent"],
+        "sent": ["confirmed"],
+        "confirmed": ["received", "cancelled", "revised", "obsolete"],
+    }
+    if new_status not in allowed.get(doc.status, []):
+        raise HTTPException(400, f"Invalid transition from {doc.status} to {new_status}")
+    old_status = doc.status
+    doc.status = new_status
+    db.add(ActivityLog(entity_type="purchase_order", entity_id=doc_id, action="status_change",
+                       description=f"Purchase Order {doc.nomor}: {old_status} → {new_status}"))
+    await db.flush()
+    return PurchaseOrderResponse.model_validate(doc)
 
 
 @router.post("/{doc_id}/revise")
@@ -131,4 +165,7 @@ async def revise_po(doc_id: str, db: AsyncSession = Depends(get_db)):
     doc = await db.get(PurchaseOrder, doc_id)
     if not doc or doc.is_deleted: raise HTTPException(404, "Not found")
     new_doc = await create_revision(db, PurchaseOrder, PurchaseOrderItem, doc_id, "purchase_order_id")
+    db.add(ActivityLog(entity_type="purchase_order", entity_id=doc_id, action="revise",
+                       description=f"Revised Purchase Order {doc.nomor} → {new_doc.nomor} v{new_doc.version}"))
+    await db.flush()
     return PurchaseOrderResponse.model_validate(new_doc)

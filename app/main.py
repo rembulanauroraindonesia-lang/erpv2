@@ -33,6 +33,8 @@ from app.routers import purchase_order as purchase_order_api
 from app.routers import pickup_order as pickup_order_api
 from app.routers import delivery_note as delivery_note_api
 from app.routers import invoice as invoice_api
+from app.routers import proforma_invoice as proforma_invoice_api
+from app.routers import payment as payment_api
 from app.routers import settings as settings_api
 from app.routers import uploads as uploads_api
 from app.routers import pdf as pdf_router
@@ -44,8 +46,13 @@ from app.htmx import purchase_order as purchase_order_htmx
 from app.htmx import pickup_order as pickup_order_htmx
 from app.htmx import delivery_note as delivery_note_htmx
 from app.htmx import invoice as invoice_htmx
+from app.htmx import proforma_invoice as proforma_invoice_htmx
+from app.htmx import payment as payment_htmx
 from app.htmx import settings as settings_htmx
 from app.htmx import dashboard as dashboard_htmx
+from app.htmx import shipping as shipping_htmx
+from app.htmx import finance as finance_htmx
+from app.htmx import activity as activity_htmx
 
 app.include_router(contacts_api.router)
 app.include_router(items_api.router)
@@ -55,6 +62,8 @@ app.include_router(purchase_order_api.router)
 app.include_router(pickup_order_api.router)
 app.include_router(delivery_note_api.router)
 app.include_router(invoice_api.router)
+app.include_router(proforma_invoice_api.router)
+app.include_router(payment_api.router)
 app.include_router(settings_api.router)
 app.include_router(uploads_api.router)
 app.include_router(pdf_router.router)
@@ -66,8 +75,13 @@ app.include_router(purchase_order_htmx.router)
 app.include_router(pickup_order_htmx.router)
 app.include_router(delivery_note_htmx.router)
 app.include_router(invoice_htmx.router)
+app.include_router(proforma_invoice_htmx.router)
+app.include_router(payment_htmx.router)
 app.include_router(settings_htmx.router)
 app.include_router(dashboard_htmx.router)
+app.include_router(shipping_htmx.router)
+app.include_router(finance_htmx.router)
+app.include_router(activity_htmx.router)
 
 
 @app.get("/health")

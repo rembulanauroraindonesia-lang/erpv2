@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.delivery_note import DeliveryNote, DeliveryNoteItem
+from app.models.system import ActivityLog
 from app.schemas.delivery_note import (
     DeliveryNoteCreate, DeliveryNoteUpdate,
     DeliveryNoteResponse, DeliveryNoteDetailResponse, DNItemResponse,
@@ -65,6 +66,7 @@ async def create_dn(body: DeliveryNoteCreate, db: AsyncSession = Depends(get_db)
         driver_name=body.driver_name,
         driver_phone=body.driver_phone,
         notes=body.notes,
+        bukti_kirim_file=body.bukti_kirim_file,
     )
     db.add(doc); await db.flush()
 
@@ -74,6 +76,10 @@ async def create_dn(body: DeliveryNoteCreate, db: AsyncSession = Depends(get_db)
             quantity=Decimal(str(it.quantity)),
             urutan=it.urutan if it.urutan else i, notes=it.notes,
         ))
+    await db.flush()
+
+    db.add(ActivityLog(entity_type="delivery_note", entity_id=doc.id, action="create",
+                       description=f"Created Surat Jalan {doc.nomor}"))
     await db.flush()
 
     items = (await db.execute(
@@ -103,6 +109,10 @@ async def update_dn(doc_id: str, body: DeliveryNoteUpdate, db: AsyncSession = De
             ))
     await db.flush()
 
+    db.add(ActivityLog(entity_type="delivery_note", entity_id=doc_id, action="update",
+                       description=f"Updated Surat Jalan {doc.nomor}"))
+    await db.flush()
+
     items = (await db.execute(
         select(DeliveryNoteItem).where(DeliveryNoteItem.delivery_note_id == doc_id).order_by(DeliveryNoteItem.urutan)
     )).scalars().all()
@@ -115,8 +125,31 @@ async def update_dn(doc_id: str, body: DeliveryNoteUpdate, db: AsyncSession = De
 async def delete_dn(doc_id: str, db: AsyncSession = Depends(get_db)):
     doc = await db.get(DeliveryNote, doc_id)
     if not doc or doc.is_deleted: raise HTTPException(404, "Not found")
-    doc.is_deleted = True; await db.flush()
+    doc.is_deleted = True
+    db.add(ActivityLog(entity_type="delivery_note", entity_id=doc_id, action="delete",
+                       description=f"Deleted Surat Jalan {doc.nomor}"))
+    await db.flush()
     return {"ok": True}
+
+
+@router.post("/{doc_id}/status")
+async def status_dn(doc_id: str, body: dict, db: AsyncSession = Depends(get_db)):
+    doc = await db.get(DeliveryNote, doc_id)
+    if not doc or doc.is_deleted:
+        raise HTTPException(404, "Surat Jalan not found")
+    new_status = body.get("status")
+    allowed = {
+        "draft": ["sent"],
+        "sent": ["delivered", "cancelled", "revised", "obsolete"],
+    }
+    if new_status not in allowed.get(doc.status, []):
+        raise HTTPException(400, f"Invalid transition from {doc.status} to {new_status}")
+    old_status = doc.status
+    doc.status = new_status
+    db.add(ActivityLog(entity_type="delivery_note", entity_id=doc_id, action="status_change",
+                       description=f"Surat Jalan {doc.nomor}: {old_status} → {new_status}"))
+    await db.flush()
+    return DeliveryNoteResponse.model_validate(doc)
 
 
 @router.post("/{doc_id}/revise")
@@ -124,4 +157,7 @@ async def revise_dn(doc_id: str, db: AsyncSession = Depends(get_db)):
     doc = await db.get(DeliveryNote, doc_id)
     if not doc or doc.is_deleted: raise HTTPException(404, "Not found")
     new_doc = await create_revision(db, DeliveryNote, DeliveryNoteItem, doc_id, "delivery_note_id")
+    db.add(ActivityLog(entity_type="delivery_note", entity_id=doc_id, action="revise",
+                       description=f"Revised Surat Jalan {doc.nomor} → {new_doc.nomor} v{new_doc.version}"))
+    await db.flush()
     return DeliveryNoteResponse.model_validate(new_doc)

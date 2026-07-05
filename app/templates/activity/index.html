@@ -1,0 +1,39 @@
+{% extends "shared/_base.html" %}
+
+{% block title %}Aktivitas - RAI ERP{% endblock %}
+{% block page_title %}Aktivitas Terbaru{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl">
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="divide-y">
+            {% if logs %}
+            {% for log in logs %}
+            <div class="px-6 py-3 flex items-center gap-4 hover:bg-gray-50">
+                <div class="flex-shrink-0">
+                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full {{ action_colors.get(log.action, 'bg-gray-100 text-gray-800') }}">
+                        {{ action_labels.get(log.action, log.action) }}
+                    </span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-gray-900 truncate">
+                        {{ log.description or '' }}
+                    </p>
+                    <p class="text-xs text-gray-400">
+                        {{ entity_labels.get(log.entity_type, log.entity_type) }} · {{ log.entity_id[:8] }}
+                    </p>
+                </div>
+                <div class="flex-shrink-0 text-xs text-gray-400">
+                    {{ log.created_at.strftime('%d/%m/%Y %H:%M') if log.created_at else '-' }}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="px-6 py-12 text-center text-gray-400">
+                <p>Belum ada aktivitas tercatat.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

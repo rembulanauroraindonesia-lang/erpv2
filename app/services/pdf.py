@@ -153,3 +153,29 @@ async def generate_inv_pdf(doc, items, db: AsyncSession) -> bytes:
         item_names=item_names,
     )
     return HTML(string=html_content).write_pdf()
+
+
+async def generate_pi_pdf(doc, items, db: AsyncSession) -> bytes:
+    company = await get_all_settings(db)
+    template = jinja_env.get_template("print/proforma_invoice.html")
+
+    customer = None
+    if doc.customer_id:
+        customer = await db.get(Contact, doc.customer_id)
+
+    item_ids = [pi.item_id for pi in items if pi.item_id]
+    item_names = {}
+    if item_ids:
+        result = await db.execute(select(Item).where(Item.id.in_(item_ids)))
+        item_names = {i.id: i.name for i in result.scalars().all()}
+
+    html_content = template.render(
+        doc=doc,
+        items=items,
+        company=company,
+        customer_name=customer.name if customer else '-',
+        customer_npwp=getattr(customer, 'npwp', None),
+        customer_address=getattr(customer, 'address', None),
+        item_names=item_names,
+    )
+    return HTML(string=html_content).write_pdf()

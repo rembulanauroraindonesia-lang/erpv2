@@ -8,6 +8,8 @@ from app.models.purchase_order import PurchaseOrder, PurchaseOrderItem
 from app.models.pickup_order import PickupOrder, PickupOrderItem
 from app.models.delivery_note import DeliveryNote, DeliveryNoteItem
 from app.models.invoice import Invoice, InvoiceItem
+from app.models.proforma_invoice import ProformaInvoice, ProformaInvoiceItem
+from app.models.payment import Payment, PaymentHistory
 
 __all__ = [
     "Base", "TimestampMixin", "RevisionMixin", "SoftDeleteMixin",
@@ -20,4 +22,6 @@ __all__ = [
     "PickupOrder", "PickupOrderItem",
     "DeliveryNote", "DeliveryNoteItem",
     "Invoice", "InvoiceItem",
+    "ProformaInvoice", "ProformaInvoiceItem",
+    "Payment", "PaymentHistory",
 ]

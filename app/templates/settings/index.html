@@ -4,93 +4,150 @@
 {% block page_title %}Pengaturan{% endblock %}
 
 {% block content %}
-<div x-data="settingsForm()" x-init="init()" class="max-w-3xl space-y-8">
+<div x-data="settingsForm()" x-init="init()" class="max-w-3xl space-y-6">
 
-    <!-- Section 1: Company Info -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-lg font-semibold mb-4">Informasi Perusahaan</h2>
+    <!-- Tabs -->
+    <div class="border-b border-gray-200">
+        <nav class="flex gap-6 -mb-px">
+            <button @click="tab = 'perusahaan'" :class="tab === 'perusahaan' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                class="pb-3 px-1 border-b-2 font-medium text-sm transition-colors">
+                Perusahaan
+            </button>
+            <button @click="tab = 'bank'" :class="tab === 'bank' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                class="pb-3 px-1 border-b-2 font-medium text-sm transition-colors">
+                Bank
+            </button>
+            <button @click="tab = 'pdf'" :class="tab === 'pdf' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                class="pb-3 px-1 border-b-2 font-medium text-sm transition-colors">
+                PDF
+            </button>
+        </nav>
+    </div>
+
+    <!-- Tab: Perusahaan -->
+    <div x-show="tab === 'perusahaan'" class="space-y-6">
+        <!-- Company Info -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4">Informasi Perusahaan</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Perusahaan</label>
+                    <input type="text" x-model="form.company_name"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+                    <textarea x-model="form.company_address" rows="2"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Telepon</label>
+                        <input type="text" x-model="form.company_phone"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" x-model="form.company_email"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">NPWP</label>
+                        <input type="text" x-model="form.company_npwp"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kota</label>
+                        <input type="text" x-model="form.company_city" placeholder="Jakarta"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Defaults -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4">Default Penawaran</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mode Supplier</label>
+                    <select x-model="form.default_supplier_mode"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="single">Single Supplier</option>
+                        <option value="multi">Multi Supplier</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mode Harga</label>
+                    <select x-model="form.default_price_mode"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="include_ppn">Include PPN</option>
+                        <option value="exclude_ppn">Exclude PPN</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PPN Rate (%)</label>
+                    <input type="number" step="0.1" x-model="form.default_ppn_rate"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Masa Berlaku (hari)</label>
+                    <input type="number" x-model="form.default_validity_days"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Logo Upload -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4">Logo Perusahaan</h2>
+            <div class="flex items-center gap-4">
+                <div x-show="logoUrl" class="w-24 h-24 border rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
+                    <img :src="logoUrl" class="max-w-full max-h-full object-contain" x-show="logoUrl">
+                </div>
+                <div>
+                    <input type="file" accept="image/*" @change="uploadLogo($event)"
+                        class="block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <p class="text-xs text-gray-400 mt-1">Format: PNG, JPG, SVG. Maks 2MB.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Bank -->
+    <div x-show="tab === 'bank'" class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold mb-4">Informasi Bank</h2>
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Perusahaan</label>
-                <input type="text" x-model="form.company_name"
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Bank</label>
+                <input type="text" x-model="form.bank_name" placeholder="BCA / Mandiri / BRI"
                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                <textarea x-model="form.company_address" rows="2"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Telepon</label>
-                    <input type="text" x-model="form.company_phone"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" x-model="form.company_email"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">NPWP</label>
-                    <input type="text" x-model="form.company_npwp"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kota</label>
-                    <input type="text" x-model="form.company_city" placeholder="Jakarta"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Section 2: Defaults -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-lg font-semibold mb-4">Default Penawaran</h2>
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Mode Supplier</label>
-                <select x-model="form.default_supplier_mode"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="single">Single Supplier</option>
-                    <option value="multi">Multi Supplier</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Mode Harga</label>
-                <select x-model="form.default_price_mode"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="include_ppn">Include PPN</option>
-                    <option value="exclude_ppn">Exclude PPN</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">PPN Rate (%)</label>
-                <input type="number" step="0.1" x-model="form.default_ppn_rate"
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Rekening</label>
+                <input type="text" x-model="form.bank_account" placeholder="1234567890"
                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Masa Berlaku (hari)</label>
-                <input type="number" x-model="form.default_validity_days"
+                <label class="block text-sm font-medium text-gray-700 mb-1">Atas Nama</label>
+                <input type="text" x-model="form.bank_holder" placeholder="PT Rembulan Aurora Indonesia"
                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
         </div>
     </div>
 
-    <!-- Section 3: Logo Upload -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-lg font-semibold mb-4">Logo Perusahaan</h2>
-        <div class="flex items-center gap-4">
-            <div x-show="logoUrl" class="w-24 h-24 border rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
-                <img :src="logoUrl" class="max-w-full max-h-full object-contain" x-show="logoUrl">
-            </div>
+    <!-- Tab: PDF -->
+    <div x-show="tab === 'pdf'" class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold mb-4">Pengaturan PDF</h2>
+        <div class="space-y-4">
             <div>
-                <input type="file" accept="image/*" @change="uploadLogo($event)"
-                    class="block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                <p class="text-xs text-gray-400 mt-1">Format: PNG, JPG, SVG. Maks 2MB.</p>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Header Text PDF</label>
+                <textarea x-model="form.pdf_header_text" rows="3"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Teks tambahan yang akan muncul di header dokumen PDF..."></textarea>
+                <p class="text-xs text-gray-400 mt-1">Teks ini akan muncul di header setiap dokumen PDF yang dicetak.</p>
             </div>
         </div>
     </div>
@@ -112,6 +169,7 @@
 <script>
 function settingsForm() {
     return {
+        tab: 'perusahaan',
         form: {
             company_name: '',
             company_address: '',
@@ -123,6 +181,10 @@ function settingsForm() {
             default_price_mode: 'include_ppn',
             default_ppn_rate: 11,
             default_validity_days: 30,
+            bank_name: '',
+            bank_account: '',
+            bank_holder: '',
+            pdf_header_text: '',
         },
         logoUrl: '',
         saving: false,
@@ -140,6 +202,10 @@ function settingsForm() {
             if (settings.default_price_mode) this.form.default_price_mode = settings.default_price_mode;
             if (settings.default_ppn_rate != null) this.form.default_ppn_rate = settings.default_ppn_rate;
             if (settings.default_validity_days != null) this.form.default_validity_days = settings.default_validity_days;
+            if (settings.bank_name) this.form.bank_name = settings.bank_name;
+            if (settings.bank_account) this.form.bank_account = settings.bank_account;
+            if (settings.bank_holder) this.form.bank_holder = settings.bank_holder;
+            if (settings.pdf_header_text) this.form.pdf_header_text = settings.pdf_header_text;
             if (settings.logo_path) this.logoUrl = settings.logo_path;
         },
         async save() {

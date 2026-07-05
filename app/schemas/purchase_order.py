@@ -33,6 +33,7 @@ class PurchaseOrderCreate(BaseModel):
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     notes: Optional[str] = None
+    bukti_po_file: Optional[str] = None
     items: list[POItemData] = []
 
 
@@ -45,6 +46,7 @@ class PurchaseOrderUpdate(BaseModel):
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     notes: Optional[str] = None
+    bukti_po_file: Optional[str] = None
     items: Optional[list[POItemData]] = None
 
 
@@ -61,6 +63,7 @@ class PurchaseOrderResponse(BaseModel):
     pic_name: Optional[str] = None
     pic_phone: Optional[str] = None
     notes: Optional[str] = None
+    bukti_po_file: Optional[str] = None
     version: int
     parent_id: Optional[str] = None
     is_current: bool

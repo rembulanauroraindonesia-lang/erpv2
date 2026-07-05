@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.sales_order import SalesOrder, SalesOrderItem
+from app.models.system import ActivityLog
 from app.schemas.sales_order import (
     SalesOrderCreate,
     SalesOrderUpdate,
@@ -124,6 +125,10 @@ async def create_so(body: SalesOrderCreate, db: AsyncSession = Depends(get_db)):
         db.add(pi)
 
     await db.flush()
+    db.add(ActivityLog(entity_type="sales_order", entity_id=doc.id, action="create",
+                       description=f"Created Sales Order {doc.nomor}"))
+    await db.flush()
+
     resp = SalesOrderDetailResponse.model_validate(doc)
     result = await db.execute(
         select(SalesOrderItem)
@@ -171,6 +176,10 @@ async def update_so(doc_id: str, body: SalesOrderUpdate, db: AsyncSession = Depe
             db.add(pi)
 
     await db.flush()
+    db.add(ActivityLog(entity_type="sales_order", entity_id=doc_id, action="update",
+                       description=f"Updated Sales Order {doc.nomor}"))
+    await db.flush()
+
     resp = SalesOrderDetailResponse.model_validate(doc)
     result = await db.execute(
         select(SalesOrderItem)
@@ -187,6 +196,8 @@ async def delete_so(doc_id: str, db: AsyncSession = Depends(get_db)):
     if not doc or doc.is_deleted:
         raise HTTPException(404, "Sales Order not found")
     doc.is_deleted = True
+    db.add(ActivityLog(entity_type="sales_order", entity_id=doc_id, action="delete",
+                       description=f"Deleted Sales Order {doc.nomor}"))
     await db.flush()
     return {"ok": True}
 
@@ -197,7 +208,31 @@ async def revise_so(doc_id: str, db: AsyncSession = Depends(get_db)):
     if not doc or doc.is_deleted:
         raise HTTPException(404, "Sales Order not found")
     new_doc = await create_revision(db, SalesOrder, SalesOrderItem, doc_id, "sales_order_id")
+    db.add(ActivityLog(entity_type="sales_order", entity_id=doc_id, action="revise",
+                       description=f"Revised Sales Order {doc.nomor} → {new_doc.nomor} v{new_doc.version}"))
+    await db.flush()
     return SalesOrderResponse.model_validate(new_doc)
+
+
+@router.post("/{doc_id}/status")
+async def status_so(doc_id: str, body: dict, db: AsyncSession = Depends(get_db)):
+    doc = await db.get(SalesOrder, doc_id)
+    if not doc or doc.is_deleted:
+        raise HTTPException(404, "Sales Order not found")
+    new_status = body.get("status")
+    allowed = {
+        "draft": ["confirmed"],
+        "confirmed": ["in_progress"],
+        "in_progress": ["completed", "cancelled", "revised", "obsolete"],
+    }
+    if new_status not in allowed.get(doc.status, []):
+        raise HTTPException(400, f"Invalid transition from {doc.status} to {new_status}")
+    old_status = doc.status
+    doc.status = new_status
+    db.add(ActivityLog(entity_type="sales_order", entity_id=doc_id, action="status_change",
+                       description=f"Sales Order {doc.nomor}: {old_status} → {new_status}"))
+    await db.flush()
+    return SalesOrderResponse.model_validate(doc)
 
 
 @router.post("/{doc_id}/lock")

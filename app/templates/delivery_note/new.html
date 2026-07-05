@@ -72,6 +72,13 @@
         </div>
     </div>
 
+    <!-- Upload Bukti Kirim -->
+    <div class="bg-white rounded-lg border p-6 mb-6">
+        {% with module='sj', entity_id='new', field='bukti_kirim', label='Bukti Kirim (PDF/Image)', existing_file=none %}
+            {% include "shared/_upload.html" %}
+        {% endwith %}
+    </div>
+
     <!-- Items Table -->
     <div class="bg-white rounded-lg border mb-6 overflow-x-auto">
         <table class="w-full text-sm">
@@ -157,6 +164,8 @@ function dnBuilder() {
         },
 
         async save() {
+            const buktiKirimEl = document.getElementById('upload_bukti_kirim_path');
+            const bukti_kirim_file = buktiKirimEl ? buktiKirimEl.value : null;
             const body = {
                 customer_id: this.selectedCustomer || null,
                 delivery_date: this.deliveryDate || null,
@@ -168,6 +177,7 @@ function dnBuilder() {
                 delivery_address: this.deliveryAddress || null,
                 terms_of_delivery: this.termsOfDelivery || null,
                 notes: this.notes || null,
+                bukti_kirim_file: bukti_kirim_file || null,
                 items: this.items.filter(i => i.item_id).map(i => ({
                     item_id: i.item_id,
                     quantity: i.quantity,

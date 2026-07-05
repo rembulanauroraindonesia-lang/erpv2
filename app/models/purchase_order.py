@@ -19,6 +19,7 @@ class PurchaseOrder(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
 
     pic_name = Column(String(100), nullable=True)
     pic_phone = Column(String(50), nullable=True)
+    bukti_po_file = Column(String(500), nullable=True)
 
 
 class PurchaseOrderItem(Base):

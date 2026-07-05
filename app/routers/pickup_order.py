@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.pickup_order import PickupOrder, PickupOrderItem
+from app.models.system import ActivityLog
 from app.schemas.pickup_order import (
     PickupOrderCreate, PickupOrderUpdate,
     PickupOrderResponse, PickupOrderDetailResponse, PUItemResponse,
@@ -77,6 +78,10 @@ async def create_pu(body: PickupOrderCreate, db: AsyncSession = Depends(get_db))
         ))
     await db.flush()
 
+    db.add(ActivityLog(entity_type="pickup_order", entity_id=doc.id, action="create",
+                       description=f"Created Pickup Order {doc.nomor}"))
+    await db.flush()
+
     items = (await db.execute(
         select(PickupOrderItem).where(PickupOrderItem.pickup_order_id == doc.id).order_by(PickupOrderItem.urutan)
     )).scalars().all()
@@ -104,6 +109,10 @@ async def update_pu(doc_id: str, body: PickupOrderUpdate, db: AsyncSession = Dep
             ))
     await db.flush()
 
+    db.add(ActivityLog(entity_type="pickup_order", entity_id=doc_id, action="update",
+                       description=f"Updated Pickup Order {doc.nomor}"))
+    await db.flush()
+
     items = (await db.execute(
         select(PickupOrderItem).where(PickupOrderItem.pickup_order_id == doc_id).order_by(PickupOrderItem.urutan)
     )).scalars().all()
@@ -116,8 +125,32 @@ async def update_pu(doc_id: str, body: PickupOrderUpdate, db: AsyncSession = Dep
 async def delete_pu(doc_id: str, db: AsyncSession = Depends(get_db)):
     doc = await db.get(PickupOrder, doc_id)
     if not doc or doc.is_deleted: raise HTTPException(404, "Not found")
-    doc.is_deleted = True; await db.flush()
+    doc.is_deleted = True
+    db.add(ActivityLog(entity_type="pickup_order", entity_id=doc_id, action="delete",
+                       description=f"Deleted Pickup Order {doc.nomor}"))
+    await db.flush()
     return {"ok": True}
+
+
+@router.post("/{doc_id}/status")
+async def status_pu(doc_id: str, body: dict, db: AsyncSession = Depends(get_db)):
+    doc = await db.get(PickupOrder, doc_id)
+    if not doc or doc.is_deleted:
+        raise HTTPException(404, "Pickup Order not found")
+    new_status = body.get("status")
+    allowed = {
+        "draft": ["sent"],
+        "sent": ["picked_up"],
+        "picked_up": ["received", "cancelled", "revised", "obsolete"],
+    }
+    if new_status not in allowed.get(doc.status, []):
+        raise HTTPException(400, f"Invalid transition from {doc.status} to {new_status}")
+    old_status = doc.status
+    doc.status = new_status
+    db.add(ActivityLog(entity_type="pickup_order", entity_id=doc_id, action="status_change",
+                       description=f"Pickup Order {doc.nomor}: {old_status} → {new_status}"))
+    await db.flush()
+    return PickupOrderResponse.model_validate(doc)
 
 
 @router.post("/{doc_id}/revise")
@@ -125,4 +158,7 @@ async def revise_pu(doc_id: str, db: AsyncSession = Depends(get_db)):
     doc = await db.get(PickupOrder, doc_id)
     if not doc or doc.is_deleted: raise HTTPException(404, "Not found")
     new_doc = await create_revision(db, PickupOrder, PickupOrderItem, doc_id, "pickup_order_id")
+    db.add(ActivityLog(entity_type="pickup_order", entity_id=doc_id, action="revise",
+                       description=f"Revised Pickup Order {doc.nomor} → {new_doc.nomor} v{new_doc.version}"))
+    await db.flush()
     return PickupOrderResponse.model_validate(new_doc)

@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.penawaran import Penawaran, PenawaranItem
+from app.models.system import ActivityLog
 from app.schemas.penawaran import (
     PenawaranCreate,
     PenawaranUpdate,
@@ -139,8 +140,11 @@ async def create_penawaran(body: PenawaranCreate, db: AsyncSession = Depends(get
 
     await db.flush()
 
+    db.add(ActivityLog(entity_type="penawaran", entity_id=doc.id, action="create",
+                       description=f"Created Penawaran {doc.nomor}"))
+    await db.flush()
+
     resp = PenawaranDetailResponse.model_validate(doc)
-    resp.items = []
     result = await db.execute(
         select(PenawaranItem)
         .where(PenawaranItem.penawaran_id == doc.id)
@@ -214,6 +218,10 @@ async def update_penawaran(
 
     await db.flush()
 
+    db.add(ActivityLog(entity_type="penawaran", entity_id=doc_id, action="update",
+                       description=f"Updated Penawaran {doc.nomor}"))
+    await db.flush()
+
     resp = PenawaranDetailResponse.model_validate(doc)
     result = await db.execute(
         select(PenawaranItem)
@@ -230,6 +238,8 @@ async def delete_penawaran(doc_id: str, db: AsyncSession = Depends(get_db)):
     if not doc or doc.is_deleted:
         raise HTTPException(404, "Penawaran not found")
     doc.is_deleted = True
+    db.add(ActivityLog(entity_type="penawaran", entity_id=doc_id, action="delete",
+                       description=f"Deleted Penawaran {doc.nomor}"))
     await db.flush()
     return {"ok": True}
 
@@ -243,7 +253,27 @@ async def revise_penawaran(doc_id: str, db: AsyncSession = Depends(get_db)):
     new_doc = await create_revision(
         db, Penawaran, PenawaranItem, doc_id, "penawaran_id"
     )
+    db.add(ActivityLog(entity_type="penawaran", entity_id=doc_id, action="revise",
+                       description=f"Revised Penawaran {doc.nomor} → {new_doc.nomor} v{new_doc.version}"))
+    await db.flush()
     return PenawaranResponse.model_validate(new_doc)
+
+
+@router.post("/{doc_id}/status")
+async def status_penawaran(doc_id: str, body: dict, db: AsyncSession = Depends(get_db)):
+    doc = await db.get(Penawaran, doc_id)
+    if not doc or doc.is_deleted:
+        raise HTTPException(404, "Penawaran not found")
+    new_status = body.get("status")
+    allowed = {"draft": ["locked"], "locked": ["approved", "revised", "obsolete"]}
+    current = doc.status
+    if new_status not in allowed.get(current, []):
+        raise HTTPException(400, f"Invalid transition from {current} to {new_status}")
+    doc.status = new_status
+    db.add(ActivityLog(entity_type="penawaran", entity_id=doc_id, action="status_change",
+                       description=f"Penawaran {doc.nomor}: {current} → {new_status}"))
+    await db.flush()
+    return PenawaranResponse.model_validate(doc)
 
 
 @router.post("/{doc_id}/lock")

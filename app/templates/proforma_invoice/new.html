@@ -1,15 +1,15 @@
 {% extends "shared/_base.html" %}
 
-{% block title %}Buat Invoice — RAI ERP{% endblock %}
+{% block title %}Buat Proforma Invoice — RAI ERP{% endblock %}
 {% block page_title %}
 <div class="flex items-center gap-3">
-    <a href="/app/invoice" class="text-gray-400 hover:text-gray-600">&larr;</a>
-    Buat Invoice
+    <a href="/app/proforma-invoice" class="text-gray-400 hover:text-gray-600">&larr;</a>
+    Buat Proforma Invoice
 </div>
 {% endblock %}
 
 {% block content %}
-<div x-data="invoiceBuilder()" class="space-y-6">
+<div x-data="piBuilder()" class="space-y-6">
     <div class="bg-white rounded-lg border p-6 space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -30,12 +30,17 @@
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Invoice</label>
-                    <input type="date" x-model="invoice_date" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jatuh Tempo</label>
                     <input type="date" x-model="due_date" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Metode Bayar</label>
+                    <select x-model="payment_method" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                        <option value="">-- Pilih --</option>
+                        <option value="transfer">Transfer</option>
+                        <option value="giro">Giro</option>
+                        <option value="cek">Cek</option>
+                    </select>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
@@ -61,13 +66,6 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
             <textarea x-model="notes" rows="2" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"></textarea>
         </div>
-    </div>
-
-    <!-- Upload Bukti Bayar -->
-    <div class="bg-white rounded-lg border p-6">
-        {% with module='inv', entity_id='new', field='bukti_bayar', label='Bukti Bayar (PDF/Image)', existing_file=none %}
-            {% include "shared/_upload.html" %}
-        {% endwith %}
     </div>
 
     <!-- Items Table -->
@@ -127,7 +125,7 @@
                         <span x-text="formatRupiah(ppnAmount)"></span>
                     </div>
                     <div class="flex justify-between border-t pt-2 text-base font-bold">
-                        <span>Grand Total</span>
+                        <span>Total</span>
                         <span x-text="formatRupiah(grandTotal)"></span>
                     </div>
                 </div>
@@ -136,16 +134,16 @@
     </div>
 
     <div class="flex justify-end gap-3">
-        <a href="/app/invoice" class="px-4 py-2 text-sm border rounded-md hover:bg-gray-50">Batal</a>
+        <a href="/app/proforma-invoice" class="px-4 py-2 text-sm border rounded-md hover:bg-gray-50">Batal</a>
         <button @click="save()" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">Simpan</button>
     </div>
 </div>
 
 <script>
-function invoiceBuilder() {
+function piBuilder() {
     return {
         customer_id: '', selectedCustomer: {name:'',npwp:'',address:'',phone:''},
-        invoice_date: '{{ today }}', due_date: '',
+        due_date: '', payment_method: '',
         terms_of_payment: '', terms_of_delivery: '',
         pic_name: '', pic_phone: '',
         notes: '',
@@ -168,28 +166,25 @@ function invoiceBuilder() {
         removeItem(i) { if (this.items.length > 1) this.items.splice(i,1) },
         formatRupiah(v) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(v||0) },
         async save() {
-            const buktiBayarEl = document.getElementById('upload_bukti_bayar_path');
-            const bukti_bayar_file = buktiBayarEl ? buktiBayarEl.value : null;
             const body = {
                 customer_id: this.customer_id || null,
-                invoice_date: this.invoice_date || null,
                 due_date: this.due_date || null,
+                payment_method: this.payment_method || null,
                 terms_of_payment: this.terms_of_payment || null,
                 terms_of_delivery: this.terms_of_delivery || null,
                 pic_name: this.pic_name || null,
                 pic_phone: this.pic_phone || null,
                 notes: this.notes || null,
                 include_ppn: true,
-                bukti_bayar_file: bukti_bayar_file || null,
                 items: this.items.filter(i=>i.item_id).map((i,idx)=>({
                     item_id: i.item_id, quantity: parseFloat(i.quantity)||0,
                     unit_price: parseFloat(i.unit_price)||0, urutan: idx,
                 })),
             };
-            const r = await fetch('/api/invoice', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            const r = await fetch('/api/proforma-invoice', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
             if (!r.ok) { const e=await r.json(); alert(e.detail||'Error'); return }
             const data = await r.json();
-            window.location.href = '/app/invoice/'+data.id;
+            window.location.href = '/app/proforma-invoice/'+data.id;
         },
     }
 }

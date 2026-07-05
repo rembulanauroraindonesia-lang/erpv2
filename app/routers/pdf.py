@@ -9,7 +9,8 @@ from app.models.sales_order import SalesOrder, SalesOrderItem
 from app.models.pickup_order import PickupOrder, PickupOrderItem
 from app.models.delivery_note import DeliveryNote, DeliveryNoteItem
 from app.models.invoice import Invoice, InvoiceItem
-from app.services.pdf import generate_pdf, generate_so_pdf, generate_pu_pdf, generate_dn_pdf, generate_inv_pdf
+from app.models.proforma_invoice import ProformaInvoice, ProformaInvoiceItem
+from app.services.pdf import generate_pdf, generate_so_pdf, generate_pu_pdf, generate_dn_pdf, generate_inv_pdf, generate_pi_pdf
 
 router = APIRouter(prefix="/api/pdf", tags=["pdf"])
 
@@ -106,4 +107,23 @@ async def pdf_invoice(doc_id: str, db: AsyncSession = Depends(get_db)):
         content=pdf_bytes,
         media_type="application/pdf",
         headers={"Content-Disposition": f"inline; filename=inv-{doc.nomor}.pdf"},
+    )
+
+
+@router.get("/proforma-invoice/{doc_id}")
+async def pdf_proforma_invoice(doc_id: str, db: AsyncSession = Depends(get_db)):
+    doc = await db.get(ProformaInvoice, doc_id)
+    if not doc:
+        raise HTTPException(404, "Proforma Invoice tidak ditemukan")
+    result = await db.execute(
+        select(ProformaInvoiceItem)
+        .where(ProformaInvoiceItem.proforma_invoice_id == doc_id)
+        .order_by(ProformaInvoiceItem.urutan)
+    )
+    items = result.scalars().all()
+    pdf_bytes = await generate_pi_pdf(doc, items, db)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename=pi-{doc.nomor}.pdf"},
     )

@@ -65,7 +65,7 @@ async def dn_new(request: Request, db: AsyncSession = Depends(get_db)):
     customers = customers_result.scalars().all()
 
     items_result = await db.execute(select(Item).where(Item.is_deleted == False))
-    items = items_result.scalars().all()
+    items = [{"id": i.id, "name": i.name, "unit": i.unit, "default_hpp": float(i.default_hpp or 0)} for i in items_result.scalars().all()]
 
     return templates.TemplateResponse("delivery_note/new.html", {
         "request": request,

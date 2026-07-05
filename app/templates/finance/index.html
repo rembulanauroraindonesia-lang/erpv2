@@ -1,0 +1,168 @@
+{% extends "shared/_base.html" %}
+
+{% block title %}Finance Dashboard — RAI ERP{% endblock %}
+{% block page_title %}Finance Dashboard{% endblock %}
+
+{% block page_actions %}
+<a href="/app/invoice/new" class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">+ Invoice</a>
+<a href="/app/payment/new" class="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">+ Payment</a>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-lg border p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Total Piutang (AR)</p>
+                    <p class="text-2xl font-bold text-blue-600">Rp {{ "{:,.0f}".format(total_piutang) }}</p>
+                </div>
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg border p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Total Hutang (AP)</p>
+                    <p class="text-2xl font-bold text-orange-600">Rp {{ "{:,.0f}".format(total_hutang) }}</p>
+                </div>
+                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg border p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Unpaid Invoices</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ unpaid_count }}</p>
+                </div>
+                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg border p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Overdue Payments</p>
+                    <p class="text-3xl font-bold text-red-600">{{ overdue_count }}</p>
+                </div>
+                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outstanding Invoices -->
+    <div class="bg-white rounded-lg border">
+        <div class="px-6 py-4 border-b">
+            <h2 class="text-base font-semibold text-gray-900">Outstanding Invoices</h2>
+        </div>
+        {% if outstanding %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Nomor</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Customer</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">Grand Total</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Due Date</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in outstanding %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-2">
+                            <a href="/app/invoice/{{ inv.id }}" class="text-blue-600 hover:underline font-medium">{{ inv.nomor }}</a>
+                        </td>
+                        <td class="px-4 py-2 text-gray-700">{{ contacts.get(inv.customer_id, '-') }}</td>
+                        <td class="px-4 py-2 text-right font-mono text-gray-700">Rp {{ "{:,.0f}".format(inv.grand_total) }}</td>
+                        <td class="px-4 py-2">
+                            {% if inv.due_date %}
+                            <span class="{% if inv.due_date < today %}text-red-600 font-medium{% else %}text-gray-500{% endif %}">
+                                {{ inv.due_date.strftime('%d/%m/%Y') }}
+                                {% if inv.due_date < today %}<span class="ml-1 text-xs">⚠</span>{% endif %}
+                            </span>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">
+                            <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-700">unpaid</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-6 py-8 text-center text-gray-400 text-sm">
+            Tidak ada outstanding invoice.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="bg-white rounded-lg border">
+        <div class="px-6 py-4 border-b">
+            <h2 class="text-base font-semibold text-gray-900">Recent Payments</h2>
+        </div>
+        {% if recent_payments %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Nomor</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">Amount</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Method</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Date</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pay in recent_payments %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-2">
+                            <a href="/app/payment/{{ pay.id }}" class="text-blue-600 hover:underline font-medium">{{ pay.payment_number }}</a>
+                        </td>
+                        <td class="px-4 py-2 text-right font-mono text-gray-700">Rp {{ "{:,.0f}".format(pay.amount) }}</td>
+                        <td class="px-4 py-2 text-gray-700">{{ pay.payment_method or '-' }}</td>
+                        <td class="px-4 py-2 text-gray-500">{{ pay.payment_date.strftime('%d/%m/%Y') if pay.payment_date else pay.created_at.strftime('%d/%m/%Y') if pay.created_at else '-' }}</td>
+                        <td class="px-4 py-2">
+                            <span class="inline-block px-2 py-0.5 text-xs rounded-full
+                                {% if pay.status == 'cleared' %}bg-green-100 text-green-700
+                                {% elif pay.status == 'pending' %}bg-yellow-100 text-yellow-700
+                                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                {{ pay.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-6 py-8 text-center text-gray-400 text-sm">
+            Belum ada pembayaran.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

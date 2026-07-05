@@ -21,6 +21,7 @@ class DeliveryNote(TimestampMixin, SoftDeleteMixin, RevisionMixin, Base):
     pic_phone = Column(String(50), nullable=True)
     delivery_address = Column(Text, nullable=True)
     terms_of_delivery = Column(Text, nullable=True)
+    bukti_kirim_file = Column(String(500), nullable=True)
 
 
 class DeliveryNoteItem(Base):

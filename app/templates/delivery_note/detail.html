@@ -115,6 +115,40 @@
            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium">
             Cetak PDF
         </a>
+        {% if doc.status == 'draft' %}
+        <button hx-post="/api/delivery-note/{{ doc.id }}/status" hx-target="body" hx-push-url="true"
+                hx-vals='{"status":"sent"}'
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                onclick="return confirm('Kirim Surat Jalan?')">
+            Send
+        </button>
+        {% elif doc.status == 'sent' %}
+        <button hx-post="/api/delivery-note/{{ doc.id }}/status" hx-target="body" hx-push-url="true"
+                hx-vals='{"status":"delivered"}'
+                class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
+                onclick="return confirm('Konfirmasi terkirim?')">
+            Delivered
+        </button>
+        <button hx-post="/api/delivery-note/{{ doc.id }}/status" hx-target="body" hx-push-url="true"
+                hx-vals='{"status":"cancelled"}'
+                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"
+                onclick="return confirm('Batalkan Surat Jalan?')">
+            Cancel
+        </button>
+        <button hx-post="/api/delivery-note/{{ doc.id }}/status" hx-target="body" hx-push-url="true"
+                hx-vals='{"status":"obsolete"}'
+                class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm font-medium"
+                onclick="return confirm('Tandai obsolete?')">
+            Obsolete
+        </button>
+        {% endif %}
+        {% if doc.status not in ('revised', 'obsolete', 'cancelled') %}
+        <button hx-post="/api/delivery-note/{{ doc.id }}/revise" hx-target="body" hx-push-url="true"
+                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium"
+                onclick="return confirm('Buat revisi baru?')">
+            Revisi
+        </button>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

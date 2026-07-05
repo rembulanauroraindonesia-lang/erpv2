@@ -33,6 +33,7 @@ class DeliveryNoteCreate(BaseModel):
     delivery_address: Optional[str] = None
     terms_of_delivery: Optional[str] = None
     notes: Optional[str] = None
+    bukti_kirim_file: Optional[str] = None
     items: list[DNItemData] = []
 
 
@@ -48,6 +49,7 @@ class DeliveryNoteUpdate(BaseModel):
     delivery_address: Optional[str] = None
     terms_of_delivery: Optional[str] = None
     notes: Optional[str] = None
+    bukti_kirim_file: Optional[str] = None
     items: Optional[list[DNItemData]] = None
 
 
@@ -66,6 +68,7 @@ class DeliveryNoteResponse(BaseModel):
     terms_of_delivery: Optional[str] = None
     status: str
     notes: Optional[str] = None
+    bukti_kirim_file: Optional[str] = None
     version: int
     parent_id: Optional[str] = None
     is_current: bool
