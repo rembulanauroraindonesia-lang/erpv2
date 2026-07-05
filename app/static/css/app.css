@@ -1,0 +1,6 @@
+.nav-link {
+    @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-colors;
+}
+.nav-link.active {
+    @apply bg-blue-50 text-blue-700 font-medium;
+}

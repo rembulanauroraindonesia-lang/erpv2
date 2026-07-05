@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  rai-erp:
+    build: .
+    container_name: rai-erp
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
+    environment:
+      - DATA_DIR=/data
+      - TIMEZONE=Asia/Jakarta
+      - DEV_MODE=true
+    restart: unless-stopped

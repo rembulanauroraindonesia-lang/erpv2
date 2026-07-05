@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  rai-erp:
+    container_name: rai-erp-dev
+    volumes:
+      - ./app:/app/app
+      - ./data:/data
+      - ./alembic:/app/alembic
+      - ./alembic.ini:/app/alembic.ini
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
