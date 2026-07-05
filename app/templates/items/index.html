@@ -33,7 +33,7 @@
                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase w-24">Aksi</th>
                 </tr>
             </thead>
-            <tbody id="item-rows">
+            <tbody id="item-rows" x-data="{expanded: null}">
                 {% include "items/_rows.html" %}
             </tbody>
         </table>

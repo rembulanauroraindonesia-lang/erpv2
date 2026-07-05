@@ -1,0 +1,41 @@
+{% for d in docs %}
+<tr class="border-b hover:bg-gray-50 cursor-pointer"
+    @click="expanded = expanded === '{{ d.id }}' ? null : '{{ d.id }}'">
+    <td class="px-4 py-3 text-sm">
+        <span x-text="expanded === '{{ d.id }}' ? '▼' : '▲'" class="mr-1 text-xs text-gray-400"></span>
+        <a href="/app/surat-jalan/{{ d.id }}" class="text-blue-600 hover:underline font-medium" @click.stop>{{ d.nomor }}</a>
+    </td>
+    <td class="px-4 py-3 text-sm text-gray-700">{{ customers.get(d.customer_id, '-') if d.customer_id else '-' }}</td>
+    <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ d.delivery_date.strftime('%d/%m/%Y') if d.delivery_date else '-' }}</td>
+    <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ d.vehicle_plate or '-' }}</td>
+    <td class="px-4 py-3">
+        <span class="inline-block px-2 py-0.5 text-xs rounded-full
+            {% if d.status == 'draft' %}bg-yellow-100 text-yellow-700
+            {% elif d.status == 'locked' %}bg-green-100 text-green-700
+            {% else %}bg-gray-100 text-gray-700{% endif %}">
+            {{ d.status }}
+        </span>
+    </td>
+    <td class="px-4 py-3">
+        <a href="/app/surat-jalan/{{ d.id }}" class="text-blue-600 hover:underline text-sm" @click.stop>Detail</a>
+    </td>
+</tr>
+<tr x-show="expanded === '{{ d.id }}'" x-cloak>
+    <td colspan="99" class="bg-gray-50 border-t">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+            <div class="col-span-2">
+                <div class="text-xs font-semibold text-gray-500 uppercase mb-2">Items</div>
+                <p class="text-sm text-gray-400 italic">Items detail tersedia di halaman detail</p>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div><span class="text-gray-500">Driver:</span> {{ d.driver_name or '-' }}</div>
+                <div><span class="text-gray-500">Driver Phone:</span> {{ d.driver_phone or '-' }}</div>
+                <div><span class="text-gray-500">No. Polisi:</span> {{ d.vehicle_plate or '-' }}</div>
+                <div><span class="text-gray-500">Alamat Kirim:</span> {{ d.delivery_address or '-' }}</div>
+                <div><span class="text-gray-500">Penerima:</span> {{ d.receiver_name or '-' }}</div>
+                <div><span class="text-gray-500">Tgl Diterima:</span> {{ d.delivered_date.strftime('%d/%m/%Y') if d.delivered_date else '-' }}</div>
+            </div>
+        </div>
+    </td>
+</tr>
+{% endfor %}

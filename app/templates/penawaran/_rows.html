@@ -1,7 +1,10 @@
 {% for p in penawarans %}
 <tr class="border-b hover:bg-gray-50 cursor-pointer"
-    hx-get="/app/penawaran/{{ p.id }}" hx-target="body" hx-push-url="true">
-    <td class="px-4 py-3 text-sm font-mono text-gray-600">{{ p.nomor }}</td>
+    @click="expanded = expanded === '{{ p.id }}' ? null : '{{ p.id }}'">
+    <td class="px-4 py-3 text-sm font-mono text-gray-600">
+        <span x-text="expanded === '{{ p.id }}' ? '▼' : '▲'" class="mr-1 text-xs text-gray-400"></span>
+        <a href="/app/penawaran/{{ p.id }}" class="text-blue-600 hover:underline font-medium" @click.stop>{{ p.nomor }}</a>
+    </td>
     <td class="px-4 py-3 text-sm text-gray-700">{{ customers.get(p.customer_id, '-') if p.customer_id else '-' }}</td>
     <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ p.terms_of_payment or '-' }}</td>
     <td class="px-4 py-3">
@@ -16,5 +19,23 @@
     <td class="px-4 py-3 text-sm text-right text-gray-700 hidden md:table-cell">{{ "{:,.0f}".format(p.grand_total) }}</td>
     <td class="px-4 py-3 text-sm text-center text-gray-500 hidden md:table-cell">v{{ p.version }}</td>
     <td class="px-4 py-3 text-sm text-gray-500">{{ p.created_at.strftime('%d/%m/%Y') }}</td>
+</tr>
+<tr x-show="expanded === '{{ p.id }}'" x-cloak>
+    <td colspan="99" class="bg-gray-50 border-t">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+            <div class="col-span-2">
+                <div class="text-xs font-semibold text-gray-500 uppercase mb-2">Items</div>
+                <p class="text-sm text-gray-400 italic">Items detail tersedia di halaman detail</p>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div><span class="text-gray-500">PIC:</span> {{ p.pic_name or '-' }}</div>
+                <div><span class="text-gray-500">Phone:</span> {{ p.pic_phone or '-' }}</div>
+                <div><span class="text-gray-500">Alamat Kirim:</span> {{ p.delivery_address or '-' }}</div>
+                <div><span class="text-gray-500">Terms Pembayaran:</span> {{ p.terms_of_payment or '-' }}</div>
+                <div><span class="text-gray-500">Terms Pengiriman:</span> {{ p.terms_of_delivery or '-' }}</div>
+                <div><span class="text-gray-500">Customer PO:</span> {{ p.customer_po_number or '-' }}</div>
+            </div>
+        </div>
+    </td>
 </tr>
 {% endfor %}

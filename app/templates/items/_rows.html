@@ -1,14 +1,31 @@
 {% for i in items %}
 <tr class="border-b hover:bg-gray-50 cursor-pointer"
-    hx-get="/app/items/{{ i.id }}" hx-target="body" hx-push-url="true">
+    @click="expanded = expanded === '{{ i.id }}' ? null : '{{ i.id }}'">
     <td class="px-4 py-3 text-sm font-mono text-gray-600">{{ i.sku or '-' }}</td>
-    <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ i.name }}</td>
+    <td class="px-4 py-3 text-sm font-medium text-gray-900">
+        <span x-text="expanded === '{{ i.id }}' ? '▼' : '▲'" class="mr-1 text-xs text-gray-400"></span>
+        <a href="/app/items/{{ i.id }}" class="text-blue-600 hover:underline" @click.stop>{{ i.name }}</a>
+    </td>
     <td class="px-4 py-3 text-sm text-gray-500">{{ i.unit }}</td>
     <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ "{:,.0f}".format(i.default_hpp) }}</td>
     <td class="px-4 py-3">
         <button hx-get="/app/items/{{ i.id }}/form" hx-target="#modal-content" hx-swap="innerHTML"
                 @click.stop="$dispatch('open-modal')"
                 class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+    </td>
+</tr>
+<tr x-show="expanded === '{{ i.id }}'" x-cloak>
+    <td colspan="99" class="bg-gray-50 border-t">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+            <div class="space-y-2 text-sm">
+                <div><span class="text-gray-500">SKU:</span> {{ i.sku or '-' }}</div>
+                <div><span class="text-gray-500">Unit:</span> {{ i.unit }}</div>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div><span class="text-gray-500">Default HPP:</span> Rp {{ "{:,.0f}".format(i.default_hpp) }}</div>
+                <div><span class="text-gray-500">Notes:</span> {{ i.notes or '-' }}</div>
+            </div>
+        </div>
     </td>
 </tr>
 {% endfor %}

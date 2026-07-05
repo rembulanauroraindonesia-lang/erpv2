@@ -1,6 +1,6 @@
 {% for c in contacts %}
 <tr class="border-b hover:bg-gray-50 cursor-pointer"
-    hx-get="/app/kontak/{{ c.id }}" hx-target="body" hx-push-url="true">
+    @click="expanded = expanded === '{{ c.id }}' ? null : '{{ c.id }}'">
     <td class="px-4 py-3">
         <span class="inline-block px-2 py-0.5 text-xs rounded-full
             {% if c.type == 'supplier' %}bg-purple-100 text-purple-700
@@ -10,13 +10,37 @@
             {{ c.type }}
         </span>
     </td>
-    <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ c.name }}</td>
+    <td class="px-4 py-3 text-sm font-medium text-gray-900">
+        <span x-text="expanded === '{{ c.id }}' ? '▼' : '▲'" class="mr-1 text-xs text-gray-400"></span>
+        <a href="/app/kontak/{{ c.id }}" class="text-blue-600 hover:underline" @click.stop>{{ c.name }}</a>
+    </td>
     <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ c.npwp or '-' }}</td>
     <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ c.phone or '-' }}</td>
     <td class="px-4 py-3">
         <button hx-get="/app/kontak/{{ c.id }}/form" hx-target="#modal-content" hx-swap="innerHTML"
                 @click.stop="$dispatch('open-modal')"
                 class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+    </td>
+</tr>
+<tr x-show="expanded === '{{ c.id }}'" x-cloak>
+    <td colspan="99" class="bg-gray-50 border-t">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+            <div class="space-y-2 text-sm">
+                <div><span class="text-gray-500">Alamat:</span> {{ c.address or '-' }}</div>
+                <div><span class="text-gray-500">NPWP:</span> {{ c.npwp or '-' }}</div>
+                <div><span class="text-gray-500">Tax Info:</span> {{ c.tax_info or '-' }}</div>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div><span class="text-gray-500">PIC:</span> {{ c.pic_name or '-' }}</div>
+                <div><span class="text-gray-500">PIC Phone:</span> {{ c.pic_phone or '-' }}</div>
+                <div><span class="text-gray-500">Contact Phone:</span> {{ c.contact_phone or '-' }}</div>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div><span class="text-gray-500">TOP:</span> {{ c.terms_of_payment or '-' }}</div>
+                <div><span class="text-gray-500">Terms Delivery:</span> {{ c.terms_of_delivery or '-' }}</div>
+                <div><span class="text-gray-500">Notes:</span> {{ c.notes or '-' }}</div>
+            </div>
+        </div>
     </td>
 </tr>
 {% endfor %}

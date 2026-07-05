@@ -37,28 +37,8 @@
                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase w-20">Aksi</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for d in docs %}
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="px-4 py-3 text-sm">
-                        <a href="/app/sales-order/{{ d.id }}" class="text-blue-600 hover:underline font-medium">{{ d.nomor }}</a>
-                    </td>
-                    <td class="px-4 py-3 text-sm text-gray-700">{{ customers.get(d.customer_id, '-') if d.customer_id else '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ d.order_date.strftime('%d/%m/%Y') if d.order_date else '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-right font-mono">Rp {{ "{:,.0f}".format(d.grand_total) }}</td>
-                    <td class="px-4 py-3">
-                        <span class="inline-block px-2 py-0.5 text-xs rounded-full
-                            {% if d.status == 'draft' %}bg-yellow-100 text-yellow-700
-                            {% elif d.status == 'locked' or d.status == 'confirmed' %}bg-green-100 text-green-700
-                            {% else %}bg-gray-100 text-gray-700{% endif %}">
-                            {{ d.status }}
-                        </span>
-                    </td>
-                    <td class="px-4 py-3">
-                        <a href="/app/sales-order/{{ d.id }}" class="text-blue-600 hover:underline text-sm">Detail</a>
-                    </td>
-                </tr>
-                {% endfor %}
+            <tbody x-data="{expanded: null}">
+                {% include "sales_order/_rows.html" %}
             </tbody>
         </table>
     </div>

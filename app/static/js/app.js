@@ -27,3 +27,10 @@ function showToast(message, type = 'success') {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
+
+// Alpine.js + HTMX integration: re-init Alpine directives after HTMX swaps
+document.addEventListener('htmx:afterSettle', function(evt) {
+    if (evt.detail.target) {
+        Alpine.initTree(evt.detail.target);
+    }
+});

@@ -44,23 +44,8 @@
                         <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-[80px]">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y">
-                    {% for doc in docs %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm font-medium text-blue-600">{{ doc.nomor }}</td>
-                        <td class="px-4 py-3 text-sm">{{ customer_names.get(doc.customer_id, '-') }}</td>
-                        <td class="px-4 py-3 text-sm">{{ doc.invoice_date.strftime('%d/%m/%Y') if doc.invoice_date else '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-right font-medium">Rp {{ "{:,.0f}".format(doc.grand_total) }}</td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="inline-flex px-2 py-0.5 text-xs rounded-full {% if doc.status == 'paid' %}bg-green-100 text-green-800{% elif doc.status == 'partially_paid' %}bg-yellow-100 text-yellow-800{% elif doc.status == 'bad_debt' %}bg-red-100 text-red-800{% elif doc.status == 'locked' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-700{% endif %}">
-                                {{ doc.status }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 text-center text-sm">
-                            <a href="/app/invoice/{{ doc.id }}" class="text-blue-600 hover:underline">Detail</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                <tbody class="divide-y" x-data="{expanded: null}">
+                    {% include "invoice/_rows.html" %}
                 </tbody>
             </table>
         </div>
