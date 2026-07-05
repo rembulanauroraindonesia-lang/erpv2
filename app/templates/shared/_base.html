@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RAI ERP{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="flex">
+        {% include "shared/_sidebar.html" %}
+
+        <main class="flex-1 min-h-screen">
+            <!-- Top bar -->
+            <div class="bg-white border-b px-6 py-4 flex items-center justify-between">
+                <h1 class="font-display text-xl sm:text-2xl font-bold tracking-tight">
+                    {% block page_title %}{% endblock %}
+                </h1>
+                <div class="flex items-center gap-3">
+                    {% block page_actions %}{% endblock %}
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col items-end"></div>
+
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

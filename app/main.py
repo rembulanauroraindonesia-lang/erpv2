@@ -24,6 +24,16 @@ app = FastAPI(
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+from app.routers import contacts as contacts_api
+from app.routers import items as items_api
+from app.htmx import contacts as contacts_htmx
+from app.htmx import items as items_htmx
+
+app.include_router(contacts_api.router)
+app.include_router(items_api.router)
+app.include_router(contacts_htmx.router)
+app.include_router(items_htmx.router)
+
 
 @app.get("/health")
 async def health():

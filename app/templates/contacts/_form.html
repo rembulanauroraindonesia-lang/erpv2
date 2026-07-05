@@ -1,0 +1,69 @@
+<form {% if contact %}
+      hx-patch="/api/contacts/{{ contact.id }}"
+      {% else %}
+      hx-post="/api/contacts"
+      {% endif %}
+      hx-target="body"
+      class="space-y-4">
+    <h3 class="text-lg font-semibold">
+        {% if contact %}Edit Kontak{% else %}Tambah Kontak{% endif %}
+    </h3>
+
+    <div>
+        <label class="block text-sm font-medium mb-1">Tipe</label>
+        <select name="type" required class="w-full border rounded-lg px-3 py-2 text-sm">
+            <option value="supplier" {% if contact and contact.type == 'supplier' %}selected{% endif %}>Supplier</option>
+            <option value="customer" {% if contact and contact.type == 'customer' %}selected{% endif %}>Customer</option>
+            <option value="expedition" {% if contact and contact.type == 'expedition' %}selected{% endif %}>Expedition</option>
+            <option value="marketing" {% if contact and contact.type == 'marketing' %}selected{% endif %}>Marketing</option>
+        </select>
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium mb-1">Nama</label>
+        <input type="text" name="name" required value="{{ contact.name if contact else '' }}"
+               class="w-full border rounded-lg px-3 py-2 text-sm">
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div>
+            <label class="block text-sm font-medium mb-1">Email</label>
+            <input type="email" name="email" value="{{ contact.email if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Telepon</label>
+            <input type="text" name="phone" value="{{ contact.phone if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium mb-1">Alamat</label>
+        <textarea name="address" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm">{{ contact.address if contact else '' }}</textarea>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div>
+            <label class="block text-sm font-medium mb-1">NPWP</label>
+            <input type="text" name="npwp" value="{{ contact.npwp if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Catatan</label>
+            <input type="text" name="notes" value="{{ contact.notes if contact else '' }}"
+                   class="w-full border rounded-lg px-3 py-2 text-sm">
+        </div>
+    </div>
+
+    <div class="flex gap-2 justify-end pt-2">
+        <button type="button" @click="$dispatch('close-modal')"
+                class="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+            Batal
+        </button>
+        <button type="submit"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+            {% if contact %}Simpan Perubahan{% else %}Tambah{% endif %}
+        </button>
+    </div>
+</form>

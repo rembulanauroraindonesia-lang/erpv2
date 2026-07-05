@@ -1,0 +1,57 @@
+{% extends "shared/_base.html" %}
+
+{% block title %}{{ item.name }} — RAI ERP{% endblock %}
+{% block page_title %}
+<div class="flex items-center gap-3">
+    <a href="/app/items" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+    </a>
+    {{ item.name }}
+</div>
+{% endblock %}
+
+{% block page_actions %}
+<button hx-get="/app/items/{{ item.id }}/form" hx-target="#modal-content" hx-swap="innerHTML"
+        @click="$dispatch('open-modal')"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+    Edit
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="bg-white rounded-lg border p-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">SKU</div>
+                <div class="text-sm font-mono">{{ item.sku or '-' }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">Unit</div>
+                <div class="text-sm">{{ item.unit }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase mb-1">HPP Default</div>
+                <div class="text-sm">{{ "{:,.0f}".format(item.default_hpp) }}</div>
+            </div>
+            <div class="col-span-2 md:col-span-3">
+                <div class="text-xs text-gray-500 uppercase mb-1">Catatan</div>
+                <div class="text-sm">{{ item.notes or '-' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for edit -->
+<div x-data="{ open: false }"
+     @open-modal.window="open = true"
+     @close-modal.window="open = false"
+     x-show="open" x-cloak
+     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6" @click.outside="open = false">
+        <div id="modal-content"></div>
+    </div>
+</div>
+{% endblock %}

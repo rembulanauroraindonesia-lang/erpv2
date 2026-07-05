@@ -1,0 +1,14 @@
+{% for i in items %}
+<tr class="border-b hover:bg-gray-50 cursor-pointer"
+    hx-get="/app/items/{{ i.id }}" hx-target="body" hx-push-url="true">
+    <td class="px-4 py-3 text-sm font-mono text-gray-600">{{ i.sku or '-' }}</td>
+    <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ i.name }}</td>
+    <td class="px-4 py-3 text-sm text-gray-500">{{ i.unit }}</td>
+    <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ "{:,.0f}".format(i.default_hpp) }}</td>
+    <td class="px-4 py-3">
+        <button hx-get="/app/items/{{ i.id }}/form" hx-target="#modal-content" hx-swap="innerHTML"
+                @click.stop="$dispatch('open-modal')"
+                class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+    </td>
+</tr>
+{% endfor %}
